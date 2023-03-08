@@ -1,0 +1,51 @@
+# prototool configuration.
+# See
+# https://github.com/uber/prototool/blob/dev/etc/config/example/prototool.yaml
+# for reference.
+
+excludes:
+    - protos/third_party
+    - vendor/
+
+protoc:
+    version: 3.12.3
+    includes:
+        - protos/ethservicev1/ # root of proto imports
+        - protos/third_party # third_party proto imports
+
+lint:
+    group: uber2
+    rules:
+        remove:
+            - ENUM_FIELD_PREFIXES_EXCEPT_MESSAGE
+            - FILE_OPTIONS_EQUAL_GO_PACKAGE_V2_SUFFIX
+            - FILE_OPTIONS_GO_PACKAGE_NOT_LONG_FORM
+            - FILE_OPTIONS_REQUIRE_CSHARP_NAMESPACE
+            - FILE_OPTIONS_REQUIRE_JAVA_MULTIPLE_FILES
+            - FILE_OPTIONS_REQUIRE_JAVA_OUTER_CLASSNAME
+            - FILE_OPTIONS_REQUIRE_JAVA_PACKAGE
+            - FILE_OPTIONS_REQUIRE_OBJC_CLASS_PREFIX
+            - FILE_OPTIONS_REQUIRE_PHP_NAMESPACE
+            - NAMES_NO_DATA
+            - REQUEST_RESPONSE_NAMES_MATCH_RPC
+            - REQUEST_RESPONSE_TYPES_IN_SAME_FILE
+            - REQUEST_RESPONSE_TYPES_ONLY_IN_FILE
+            - REQUEST_RESPONSE_TYPES_UNIQUE
+            - SERVICE_NAMES_API_SUFFIX
+            - SERVICE_NAMES_MATCH_FILE_NAME
+            - WKT_DURATION_SUFFIX
+            - ENUM_FIELD_NAMES_UPPER_SNAKE_CASE
+
+generate:
+    go_options:
+        import_path: github.com/block-wallet/golang-service-template/protos
+    plugins:
+        - name: go
+          flags: paths=source_relative,plugins=grpc
+          output: protos/ethservicev1/src
+        - name: grpc-gateway
+          type: go
+          flags: paths=source_relative,logtostderr=true
+          output: protos/ethservicev1/src
+        - name: doc
+          output: protos/ethservicev1/doc

@@ -1,0 +1,66 @@
+name: Golang workflow
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+jobs:
+  test:
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.14'
+      - name: Install
+        run: make install
+      - name: Lint
+        run: make lint
+      - name: Test
+        run: make test
+      - name: Compile protos
+        run: make generate
+      - name: Build
+        run: make build
+
+  build:
+    if: github.ref_type != 'tag' && github.ref_name != 'main'
+    needs: test
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build image
+        run: make docker-build
+
+  publish:
+    needs: test
+    runs-on: [self-hosted]
+    if: github.ref_type == 'tag' || github.ref_name == 'main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Define image tag
+        run: |
+          if [ $GITHUB_REF_TYPE  == "tag" ]
+          then
+            TAG=$GITHUB_REF_NAME
+          else
+            TAG=`echo ${GITHUB_SHA} | cut -c1-5`
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Show image tag
+        run: echo $TAG
+
+      # - name: Login to Amazon ECR # Not necessary in the template pipeline
+      #   run: make docker-login
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # - name: Build, tag, and push image to Amazon ECR
+      #   run: make docker-publish TAG=$TAG LATEST=true

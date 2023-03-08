@@ -1,0 +1,28 @@
+apiVersion: databases.spotahome.com/v1
+kind: RedisFailover
+metadata:
+  name: <<'redis' + name of the service>>
+spec:
+  auth:
+    secretPath: <<secret name here>>
+  sentinel:
+    replicas: 3
+  redis:
+    replicas: 3
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 400m
+        memory: 500Mi
+    storage:
+      persistentVolumeClaim:
+        metadata:
+          name: <<'redis' + name of the service + '-data'>>
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi

@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package ethservice.v1;
+
+option go_package = "github.com/block-wallet/golang-service-template/protos/ethservicev1/src;ethservicev1common";
+
+// Empty message.
+message EmptyMsg {}

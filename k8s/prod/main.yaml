@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: <<name of the service + 'svc'>>
+  namespace: <<name of the service>>
+spec:
+  selector:
+    api: <<name of the service>>
+  ports:
+    - protocol: TCP
+      name: http
+      port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: <<name of the service>>
+  namespace: <<name of the service>>
+  labels:
+    app: <<name of the service>>
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      api: <<name of the service>>
+  template:
+    metadata:
+      labels:
+        api: <<name of the service>>
+    spec:
+      nodeSelector:
+        role: services
+      containers:
+      - name: <<name of the service>>
+        image: <<ECR:image>>
+        resources:
+          limits:
+            memory: 200Mi
+            cpu: 1
+          requests:
+            memory: 100Mi
+            cpu: 100m
+        env:
+        - name: ETH_ENDPOINT
+          value: <<eth internal service dns like ws://goerli-svc.nodes-proxies.svc.cluster.local>>
+        - name: KV_TYPE
+          value: redis
+        - name: REDIS_READ_ONLY
+          value: false
+        - name: REDIS_SENTINEL_MASTER_NAME
+          value: mymaster
+        - name: REDIS_SENTINEL_HOSTS
+          value: <<internal service of the redis cluster>>
+        - name: REDIS_PASSWORD  
+          valueFrom:
+            secretKeyRef:
+              name: <<secret name here>>
+              key: <<key of the secret>>
+        - name: REDIS_DB
+          value: "0"
+        ports:
+        - name: http
+          containerPort: 8080
