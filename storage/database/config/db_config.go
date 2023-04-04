@@ -1,14 +1,21 @@
 package config
 
+type DBType string
+
+const (
+	SQLiteDBType  DBType = "SQLite"
+	PostgreDBType DBType = "PostgreSQL"
+)
+
 type DBConfig struct {
-	DBType              string
-	LocalCacheConfig    *LocalCacheConfig
-	RedisSentinelConfig *RedisSentinelConfig
+	DBType         DBType
+	SQLConfig      *SQLConfig
+	MigrationsPath *string
 }
 
-func NewDBConfig(DBType string, localCacheConfig *LocalCacheConfig, redisSentinelConfig *RedisSentinelConfig) *DBConfig {
+func NewDBConfig(DBType DBType, sqlConfig *SQLConfig) *DBConfig {
 	return &DBConfig{
-		DBType:              DBType,
-		LocalCacheConfig:    localCacheConfig,
-		RedisSentinelConfig: redisSentinelConfig}
+		DBType:    DBType,
+		SQLConfig: sqlConfig,
+	}
 }

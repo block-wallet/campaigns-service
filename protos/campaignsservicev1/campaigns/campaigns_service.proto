@@ -1,0 +1,203 @@
+syntax = "proto3";
+
+package campaignsservice.v1;
+
+option go_package = "github.com/block-wallet/campaigns-service/protos/src/campaignsservicev1/campaigns;campaignsservicev1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
+
+// Public API for the Campaigns Service for managing the campaigns information.
+service CampaignsSerivce {
+  //campaigns
+  rpc GetCampaigns(GetCampaignsMsg) returns (GetCampaignsReply) {
+    option (google.api.http) = {
+      get: "/v1/api/campaigns"
+    };
+  }
+  rpc GetCampaignById(GetCampaignByIdMsg) returns (GetCampaignByIdReply) {
+    option (google.api.http) = {
+      get: "/v1/api/campaigns/{id}"
+    };
+  }
+  rpc GetCampaignAccounts(GetCampaignByIdMsg) returns (GetCampaignAccountsReply) {
+    option (google.api.http) = {
+      get: "/v1/api/campaigns/{id}/accounts"
+    };
+  }
+  rpc GetCampaignEnrollMessage(GetCampaignByIdMsg) returns (GetCampaignEnrollMessageReply) {
+    option (google.api.http) = {
+      get: "/v1/api/campaigns/{id}/enroll-message"
+    };
+  }
+  rpc EnrollInCampaign(EnrollInCampaignMsg) returns (EnrollInCampaignReply) {
+    option (google.api.http) = {
+      post: "/v1/api/campaigns/{campaign_id}/enroll"
+      body: "*"
+    };
+  }
+  rpc CreateCampaign(CreateCampaignMsg) returns (CreateCampaignReply) {
+    option (google.api.http) = {
+      post: "/v1/admin/campaigns"
+      body: "*"
+    };
+  }
+  rpc UpdateCampaign(UpdateCampaignMsg) returns (UpdateCampaignReply) {
+    option (google.api.http) = {
+      patch: "/v1/admin/campaigns/{campaign_id}"
+      body: "*"
+    };
+  }
+  //tokens
+  rpc GetTokens(GetTokensMsg) returns (GetTokensReply) {
+    option (google.api.http) = {
+      get: "/v1/api/tokens"
+    };
+  }
+  rpc GetTokenById(GetTokenByIdMsg) returns (GetTokenByIdReply) {
+    option (google.api.http) = {
+      get: "/v1/api/tokens/{id}"
+    };
+  }
+}
+
+// Requesting campaigns using filters.
+message GetCampaignsMsg {
+  GetCampaignsFilters filters = 1;
+}
+
+// Requesting one campaign by id
+message GetCampaignByIdMsg {
+  string id = 1;
+}
+
+message CreateCampaignMsg {
+  message CreateCampaignInput {
+    message CreateCampaignRewardInput {
+      message CreateCampaignTokenInput {
+        string id = 1;
+        MultichainToken create = 2;
+      }
+      CreateCampaignTokenInput token = 1;
+      RewardType type = 2;
+      repeated string amounts = 3;
+    }
+    string name = 1;
+    string description = 2;
+    bool is_active = 3;
+    string start_date = 4;
+    string end_date = 5;
+    CreateCampaignRewardInput rewards = 6;
+    repeated string tags = 7;
+    repeated uint32 supported_chains = 8;
+    string enroll_message = 9;
+  }
+  CreateCampaignInput campaign = 1;
+}
+
+message CreateCampaignReply {
+  Campaign campaign = 1;
+}
+
+message GetCampaignsFilters {
+  repeated CampaignStatus statuses = 1;
+  google.protobuf.StringValue from_date = 2;
+  google.protobuf.StringValue to_date = 3;
+  repeated string tags = 4;
+  repeated uint32 chain_ids = 5;
+}
+
+// Collection of campaigns.
+message GetCampaignsReply {
+  repeated Campaign campaigns = 1;
+}
+
+message GetCampaignByIdReply {
+  Campaign campaign = 1;
+}
+
+message GetCampaignAccountsReply {
+  repeated string accounts = 1;
+}
+
+message GetCampaignEnrollMessageReply {
+  string message = 1;
+}
+
+message Campaign {
+  string id = 1;
+  repeated uint32 supported_chains = 2;
+  string name = 3;
+  string description = 4;
+  CampaignStatus status = 5;
+  string start_date = 6;
+  string end_date = 7;
+  Rewards rewards = 8;
+  repeated string accounts = 9;
+  repeated string winners = 10;
+  repeated string tags = 11;
+  string enroll_message = 12;
+}
+
+// The rewards for the campaigns winners
+message Rewards {
+  MultichainToken token = 1;
+  repeated string amounts = 2;
+  RewardType type = 3;
+}
+
+message UpdateCampaignMsg {
+  string campaign_id = 1;
+  CampaignStatus status = 2;
+  repeated string winners = 3;
+}
+
+message UpdateCampaignReply {
+  Campaign campaign = 1;
+}
+
+// A token with the contract_address indexed by chain
+message MultichainToken {
+  string id = 1;
+  string name = 2;
+  int32 decimals = 3;
+  string symbol = 4;
+  map<string, string> contract_addresses = 5;
+}
+
+enum CampaignStatus {
+  CAMPAIGN_STATUS_INVALID = 0;
+  CAMPAIGN_STATUS_PENDING = 1;
+  CAMPAIGN_STATUS_ACTIVE = 2;
+  CAMPAIGN_STATUS_FINISHED = 3;
+  CAMPAIGN_STATUS_CANCELLED = 4;
+}
+
+enum RewardType {
+  REWARD_TYPE_INVALID = 0;
+  REWARD_TYPE_PODIUM = 1;
+  REWARD_TYPE_SINGLE = 2;
+  REWARD_TYPE_DYNAMIC = 3;
+}
+
+message EnrollInCampaignMsg {
+  string campaign_id = 1;
+  string account_address = 2;
+  string signature = 3;
+}
+
+message EnrollInCampaignReply {}
+
+message GetTokensMsg {}
+
+message GetTokensReply {
+  repeated MultichainToken tokens = 1;
+}
+
+message GetTokenByIdReply {
+  MultichainToken token = 1;
+}
+
+message GetTokenByIdMsg {
+  string id = 1;
+}

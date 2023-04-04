@@ -1,11 +1,11 @@
 package monitoring
 
 import (
-	"github.com/block-wallet/golang-service-template/utils/monitoring/counter"
-	"github.com/block-wallet/golang-service-template/utils/monitoring/histogram"
+	"github.com/block-wallet/campaigns-service/utils/monitoring/counter"
+	"github.com/block-wallet/campaigns-service/utils/monitoring/histogram"
 )
 
-const NAMESPACE = "ethservice"
+const NAMESPACE = "campaignsservice"
 
 var (
 	defBucketsMs = []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000}

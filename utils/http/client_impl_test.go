@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/block-wallet/golang-service-template/utils/http/mocks"
-	mocks3 "github.com/block-wallet/golang-service-template/utils/monitoring/histogram/mocks"
+	"github.com/block-wallet/campaigns-service/utils/http/mocks"
+	mocks3 "github.com/block-wallet/campaigns-service/utils/monitoring/histogram/mocks"
 	"github.com/smartystreets/assertions"
 	"github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/mock"

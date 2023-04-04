@@ -3,7 +3,7 @@ package tracing
 import (
 	"context"
 
-	"github.com/block-wallet/golang-service-template/utils/logger"
+	"github.com/block-wallet/campaigns-service/utils/logger"
 	"github.com/google/uuid"
 	gogrpc "google.golang.org/grpc"
 )

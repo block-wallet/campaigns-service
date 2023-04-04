@@ -3,10 +3,10 @@ package healthgrpcservice
 import (
 	"context"
 
-	"github.com/block-wallet/golang-service-template/utils/logger"
+	"github.com/block-wallet/campaigns-service/utils/logger"
 	"github.com/golang/protobuf/ptypes/empty"
 
-	ethservicev1health "github.com/block-wallet/golang-service-template/protos/ethservicev1/src/health"
+	campaignsservicev1health "github.com/block-wallet/campaigns-service/protos/src/campaignsservicev1/health"
 )
 
 type Handler struct{}
@@ -15,9 +15,9 @@ func NewHandler() *Handler {
 	return &Handler{}
 }
 
-func (h *Handler) Status(ctx context.Context, _ *empty.Empty) (*ethservicev1health.StatusReply, error) {
+func (h *Handler) Status(ctx context.Context, _ *empty.Empty) (*campaignsservicev1health.StatusReply, error) {
 	logger.Sugar.WithCtx(ctx).Debug("Status request received")
-	return &ethservicev1health.StatusReply{
-		Status: ethservicev1health.HealthStatus_HEALTH_STATUS_ALIVE,
+	return &campaignsservicev1health.StatusReply{
+		Status: campaignsservicev1health.HealthStatus_HEALTH_STATUS_ALIVE,
 	}, nil
 }

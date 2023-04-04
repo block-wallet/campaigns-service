@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	httpErrors "github.com/block-wallet/golang-service-template/utils/http/errors"
-	"github.com/block-wallet/golang-service-template/utils/logger"
-	"github.com/block-wallet/golang-service-template/utils/monitoring"
+	httpErrors "github.com/block-wallet/campaigns-service/utils/http/errors"
+	"github.com/block-wallet/campaigns-service/utils/logger"
+	"github.com/block-wallet/campaigns-service/utils/monitoring"
 
-	"github.com/block-wallet/golang-service-template/utils/monitoring/histogram"
+	"github.com/block-wallet/campaigns-service/utils/monitoring/histogram"
 )
 
 // ClientImpl implements the Client interface
