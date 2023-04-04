@@ -14,9 +14,7 @@
 
 This a service that stores the BlockWallet's incentive driven campaigns along with their participants, rewards and winners.
 
-## Development
-
-### Service
+## Summary
 
 This is a `REST API` with two interfaces: `HTTP` and `gRPC`. It includes metrics, interceptors, logs and uses PostgreSQL to store the campaigns information.
 
@@ -79,9 +77,13 @@ ADMIN_USERNAME -> string (blockwallet)
 ADMIN_PASSWORD -> string (password123)
 ```
 
+<hr />
+
 ### Public Endpoints
 
-#### Campaigns
+These endpoints are accessible by everybody and they are meant to be used by dApps and the BlockWallet extension.
+
+#### GetCampaigns
 
 This endpoint list all the campaigns applying the indicated filters.
 
@@ -142,28 +144,277 @@ Note that this endpoint returns ACTIVE campaigns by default. In order to change 
 }
 ```
 
-#### Events
+#### CampaignById
 
 This template is subscripted to the Tornado events (deposits and withdrawals) in Polygon network. After every event the
 service populates all the necessary data and store it in the KV database initialized.
 
 ##### Request
 
-`curl http://localhost:8080/events?pair=ETH`
+`curl http://localhost:8080/v1/api/campaigns/7fefd5a3-c808-4353-b5a9-98686dfc7fb0`
 
 ##### Response
 
 ```
 {
-    "events": [{
-        "blockNumber": 4455249
-        "commitment": "0x1b53a696c0ddce74074b6aba83495e94983cfd5fbe31e14576236dd051f3963d"
-        "leafIndex": 0
-        "timestamp": "1615964413"
-        "transactionHash": "0xa54ac86c58db7ada9347b635943ff11bd175e50bbef59f38113c6c58ff2bc958"
-    }]
+    "campaign":  {
+            "id": "7fefd5a3-c808-4353-b5a9-98686dfc7fb0",
+            "supportedChains": [
+                1,
+                137
+            ],
+            "name": "Campaign 2",
+            "description": "This is the second campaign for a PostgreSQL db",
+            "status": "CAMPAIGN_STATUS_ACTIVE",
+            "startDate": "2023-04-01T00:00:00Z",
+            "endDate": "2023-06-01T00:00:00Z",
+            "rewards": {
+                "token": {
+                    "id": "",
+                    "name": "GoBlank",
+                    "decimals": 18,
+                    "symbol": "BLANK",
+                    "contractAddresses": {}
+                },
+                "amounts": [
+                    "40000000",
+                    "30000000",
+                    "20000000"
+                ],
+                "type": "REWARD_TYPE_PODIUM"
+            },
+            "accounts": [],
+            "winners": [],
+            "tags": [
+                "BLANK",
+                "staking2"
+            ],
+            "enrollMessage": "FYI: This is my cusotm enroll message"
+        }
 }
 ```
+
+#### Enroll account in campaign
+
+The accounts that wants to enroll in a campaign should sign the campaign `enrollMessage` and provide the signature hash in order to make the registration valid. You can directly use the below endpoint `GetCampaignEnrollMessage` to just get the message to sign.
+
+##### Request
+
+`curl -X POST --location 'http://localhost:8080/v1/api/campaigns/7fefd5a3-c808-4353-b5a9-98686dfc7fb0/enroll' \
+--header 'Content-Type: application/json' \
+--data '{
+    "account_address":"0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22",
+    "signature":"0xc7f3b054f0ed23f04d1214c3f35584c04994db5699da1f5e269b7304ee0efecc3bd219cb2e188ec4f353492418ea1fe4dc99efc3164fe44027dd7183405b93f01b"
+}'`
+
+#### GetCampaignEnrollMessage
+
+To reduce the request response size, you can directly get the cmapaing's enroll message
+
+##### Request
+
+`curl http://localhost:8080/v1/api/campaigns/7fefd5a3-c808-4353-b5a9-98686dfc7fb0/enroll-message`
+
+##### Response
+
+```
+{
+    "message": "FYI: This is my cusotm enroll message"
+}
+```
+
+#### GetCampaignAccounts
+
+To reduce the request response size, you can directly get the campaigns participant
+
+##### Request
+
+`curl http://localhost:8080/v1/api/campaigns/7fefd5a3-c808-4353-b5a9-98686dfc7fb0/accounts`
+
+##### Response
+
+```
+{
+    "accounts": [
+        "0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22"
+    ]
+}
+```
+
+#### GetTokens
+
+Get all the tokens configured
+
+##### Request
+
+`curl http://localhost:8080/v1/api/tokens`
+
+##### Response
+
+```
+{
+    "tokens": [
+        {
+            "id": "99ae3179-a06f-4c0d-92f5-6e44f1d3308a",
+            "name": "GoBlank",
+            "decimals": 18,
+            "symbol": "",
+            "contractAddresses": {
+                "1": "0x41A3Dba3D677E573636BA691a70ff2D606c29666",
+                "137": "0xf4C83080E80AE530d6f8180572cBbf1Ac9D5d435"
+            }
+        }
+    ]
+}
+```
+
+#### GetTokenById
+
+##### Request
+
+`curl http://localhost:8080/v1/api/tokens/99ae3179-a06f-4c0d-92f5-6e44f1d3308a`
+
+##### Response
+
+```
+{
+    "token": [
+        {
+            "id": "99ae3179-a06f-4c0d-92f5-6e44f1d3308a",
+            "name": "GoBlank",
+            "decimals": 18,
+            "symbol": "",
+            "contractAddresses": {
+                "1": "0x41A3Dba3D677E573636BA691a70ff2D606c29666",
+                "137": "0xf4C83080E80AE530d6f8180572cBbf1Ac9D5d435"
+            }
+        }
+    ]
+}
+```
+
+### Private Endpoints
+
+There are endpoints that are restricted to admin access. We use a Basic autentication credentials set on the request headers.
+
+`Authorization: Basic {credentials}`
+
+The credentials are of the shape: `username:password` based-64 encoded.
+
+#### CreateCampaign
+
+Admins may use this enpoint to create campaigns. Note that depending on the information the admin has, the body of this request may change.
+
+For instance, in order to create a campaign, you should specify the reward token you want to use. If the token has already been used in campaign and the admin has its `id` (can be grabbed from the `GetTokens` public endpoint), he can just specify the `id` in the request, otherwise the admin should specify the whole information in order to create the token in the same flow.
+
+Also, there are some restrictions regarding the campaign status, whether it is active by default or not. Here are the things admins should pay attention:
+
+- You can create finished campaings (end_date after than today).
+- You can activate a campaign that hasn't started yet (start_date after than today).
+
+Last but not least, the campaign's enroll message can be specified in the request, otherwise a message will be auto-generated by the service using a prefix + the campaigns name. For instance, if the prefix is `Please sign this message in order to enroll in the` and the campaigns name is `Staking campaign`, the final enroll message will be: `Please sign this message in order to enroll in the Staking campaign`.
+
+##### Request
+
+`curl -X POST --location 'http://localhost:8080/v1/admin/campaigns'` -d /
+
+```
+{
+    "campaign": {
+        "name":"Campaign 2",
+        "description":"This is an active campaign",
+        "is_active":true,
+        "start_date":"2023-04-01T00:00:00Z",
+        "end_date":"2023-06-01T00:00:00Z",
+        "rewards":{
+            "amounts":["40000000","30000000","20000000"],
+            "type":"REWARD_TYPE_PODIUM",
+            "token":{
+                "create": {
+                    "name":"GoBlank",
+                    "symbol":"BLANK",
+                    "decimals":18,
+                    "contract_addresses":{
+                        "1":"0x41A3Dba3D677E573636BA691a70ff2D606c29666",
+                        "137":"0xf4C83080E80AE530d6f8180572cBbf1Ac9D5d435"
+                    }
+                }
+            }
+        },
+        "tags":["BLANK","staking1"],
+        "supported_chains": [1,137]
+    }
+}
+```
+
+If you want to specify the `token_id` you should only remove the `rewards.create` and add a new `rewards.id` property with the desired `token_id`.
+
+##### Response
+
+```
+{
+    "campaign": {
+        "id": "f3fa1d90-362a-4674-8515-25d5c8b50aef",
+        "supportedChains": [
+            1,
+            137
+        ],
+        "name": "Campaign 2",
+        "description": "This is an active campaign",
+        "status": "CAMPAIGN_STATUS_ACTIVE",
+        "startDate": "2023-04-01T00:00:00Z",
+        "endDate": "2023-06-01T00:00:00Z",
+        "rewards": {
+            "token": {
+                "id": "",
+                "name": "GoBlank",
+                "decimals": 18,
+                "symbol": "BLANK",
+            },
+            "amounts": [
+                "40000000",
+                "30000000",
+                "20000000"
+            ],
+            "type": "REWARD_TYPE_PODIUM"
+        },
+        "accounts": [],
+        "winners": [],
+        "tags": [
+            "BLANK",
+            "staking2"
+        ],
+        "enrollMessage": "Sign this message to enroll in Campaign 2"
+    }
+}
+```
+
+#### UpdateCampaign
+
+Admins can only update campaigns status and in case of updating the status to `FINISHED` they can also specify the winners. The winners may change depending on the campaign's reward type, where those campaigns which rewards are of they type `PODIUM` the amount of winners should match the quantity of `amounts`.
+
+Possible transitions:
+
+- `PENDING` -> `ACTIVE` (Campaign's start_date should be after now and end_date should be before the current datetime)
+- `PENDING` -> `CANCELLED`
+- `ACTIVE` -> `CANCELLED`
+- `ACTIVE` -> `FINISHED` (must specify winners)
+- `FINISHED` -> `FINISHED` (must specify winners again)
+
+If some of these transitions cannot fulfill what you want to do with the campaign, you should `CANCEL` it and create a new one.
+
+##### Request
+
+`curl -X PATCH --location 'http://localhost:8080/v1/admin/campaigns/f3fa1d90-362a-4674-8515-25d5c8b50aef' -d /`
+
+```
+{
+    "stauts": "CAMPAIGN_STATUS_FINISHED",
+    "winners":["0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22","0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C21","0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C32"]
+}
+```
+
+<hr />
 
 ## Develop
 
@@ -185,23 +436,11 @@ You can retrieve the metrics by running `curl localhost:9008/metrics`
 
 Before upload any change please run `make fmt` and `make lint` for code formatting and linting
 
-### Redis integration
-
-Redis Sentinel is in charge of monitoring the redis instances and return the address of the current master node and also select a new one if the existing one is not available.
-
-![Redis Sentinel](https://miro.medium.com/max/855/1*gszoEBW0lupbMDDGGgYOPA.png)
-
 ### Production
-
-You should set up a password following this guide https://github.com/spotahome/redis-operator#enabling-redis-auth. Once the secret is created add it to the (redis file)[infra/manifests/redis-cluster.yaml] and (service file)[infra/manifests/main.yaml]. Read `Deployment` below.
-
-### Local development
-
-The previous command will re/build the service image and start the service, redis master and redis sentinel containers. Starting only the redis containers won't work because the sentinel will return the local IP (docker network) of the master node and the service won't be able to connect to it.
 
 ### Deployment
 
-Currently the deployment is manually. TBD: use Flux.
+This service is deployed automatically when a new version is pushed to the aws ECR. Please refer to https://github.com/block-wallet/block-devops repository to see the k8s configuration.
 
 ### Prerequisites
 
@@ -225,12 +464,4 @@ Currently the deployment is manually. TBD: use Flux.
 ```
 make docker-login
 make docker-publish TAG=<semver>
-```
-
-### Deploy
-
-Update (at least) the image version in the `dev/main.yaml` or `prod/main.yaml` in [k8s manifest](k8s/) and then:
-
-```
-make deploy ENV=[dev|prod]
 ```
