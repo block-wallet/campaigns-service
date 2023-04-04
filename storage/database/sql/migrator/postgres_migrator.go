@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/golang-migrate/migrate/v4"
+	migrate "github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/httpfs"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 //go:embed migrations
