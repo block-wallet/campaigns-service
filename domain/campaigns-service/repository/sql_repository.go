@@ -24,7 +24,6 @@ func NewSQLRepository(sqlDatabase *sql.DB) Repository {
 func (r *SQLRepository) GetCampaigns(ctx context.Context, filters *model.GetCampaignsFilters) (*[]model.Campaign, error) {
 	campaignsQueryBuilder := NewCampaignsQueryBuilder(filters)
 	q, p := campaignsQueryBuilder.Query(ctx)
-	fmt.Printf("\n\nQuery: \n %v \n\n Params:\n %v\n\n", q, p)
 	rows, err := r.db.Query(q, p...)
 	if err != nil {
 		return nil, err

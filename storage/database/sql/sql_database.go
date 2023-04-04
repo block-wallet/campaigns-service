@@ -2,7 +2,6 @@ package sqldb
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/block-wallet/campaigns-service/storage/database/config"
 	"github.com/block-wallet/campaigns-service/utils/logger"
@@ -16,7 +15,6 @@ func NewSQLDatabase(dbConfig *config.DBConfig) (*sql.DB, error) {
 	var db *sql.DB
 	var err error
 	var sqlMigrator migrator.SQLMigrator
-	fmt.Println(dbConfig)
 	switch dbConfig.DBType {
 	case config.SQLiteDBType:
 		{

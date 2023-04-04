@@ -1,7 +1,6 @@
 package campaignsconverter
 
 import (
-	"fmt"
 	"math/big"
 	"time"
 
@@ -193,7 +192,6 @@ func campaign_FromProtoTokenToModelToken(protoToken *campaignservicev1service.Mu
 	if protoToken == nil {
 		return nil
 	}
-	fmt.Printf("Test: %v\n", protoToken)
 	return &model.MultichainToken{
 		Name:              protoToken.Name,
 		Symbol:            protoToken.Symbol,
