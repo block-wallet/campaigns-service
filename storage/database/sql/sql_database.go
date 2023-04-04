@@ -7,8 +7,7 @@ import (
 	"github.com/block-wallet/campaigns-service/utils/logger"
 
 	"github.com/block-wallet/campaigns-service/storage/database/sql/migrator"
-	"github.com/block-wallet/campaigns-service/storage/database/sql/postgre"
-	sqlite "github.com/block-wallet/campaigns-service/storage/database/sql/sqlite"
+	"github.com/block-wallet/campaigns-service/storage/database/sql/postgresql"
 )
 
 func NewSQLDatabase(dbConfig *config.DBConfig) (*sql.DB, error) {
@@ -16,21 +15,13 @@ func NewSQLDatabase(dbConfig *config.DBConfig) (*sql.DB, error) {
 	var err error
 	var sqlMigrator migrator.SQLMigrator
 	switch dbConfig.DBType {
-	case config.SQLiteDBType:
+	case config.PostgresDBType:
 		{
-			db, err = sqlite.NewSQLiteDatabase(dbConfig.SQLConfig.Connection)
+			db, err = postgresql.NewPosgtresDatabase(dbConfig.SQLConfig.Connection)
 			if err != nil {
 				return nil, err
 			}
-			sqlMigrator = migrator.NewSQLiteMigrator(db)
-		}
-	case config.PostgreDBType:
-		{
-			db, err = postgre.NewPosgtreDatabase(dbConfig.SQLConfig.Connection)
-			if err != nil {
-				return nil, err
-			}
-			sqlMigrator = migrator.NewPostgreMigrator(db)
+			sqlMigrator = migrator.NewPostgresMigrator(db)
 		}
 	}
 

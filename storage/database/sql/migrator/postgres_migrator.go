@@ -7,35 +7,35 @@ import (
 	"net/http"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/sqlite"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/httpfs"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-//go:embed sqlite_migrations
-var SQLiteMigrations embed.FS
+//go:embed migrations
+var Migrations embed.FS
 
-type sqlitemigrator struct {
+type postgremigrator struct {
 	db *sql.DB
 }
 
-func NewSQLiteMigrator(db *sql.DB) *sqlitemigrator {
-	return &sqlitemigrator{
+func NewPostgresMigrator(db *sql.DB) *postgremigrator {
+	return &postgremigrator{
 		db: db,
 	}
 }
 
-func (migrator *sqlitemigrator) Migrate() error {
-	sourceInstance, err := httpfs.New(http.FS(SQLiteMigrations), "sqlite_migrations")
+func (migrator *postgremigrator) Migrate() error {
+	sourceInstance, err := httpfs.New(http.FS(Migrations), "migrations")
 	if err != nil {
 		return fmt.Errorf("invalid source instance, %w", err)
 	}
-	targetInstance, err := sqlite.WithInstance(migrator.db, new(sqlite.Config))
+	targetInstance, err := postgres.WithInstance(migrator.db, new(postgres.Config))
 	if err != nil {
-		return fmt.Errorf("invalid target sqlite instance, %w", err)
+		return fmt.Errorf("invalid target postgres instance, %w", err)
 	}
 	m, err := migrate.NewWithInstance(
-		"httpfs", sourceInstance, "sqlite", targetInstance)
+		"httpfs", sourceInstance, "postgres", targetInstance)
 	if err != nil {
 		return fmt.Errorf("failed to initialize migrate instance, %w", err)
 	}

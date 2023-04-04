@@ -15,7 +15,7 @@ const (
 	defaultLogLevel            = "debug"
 	defaultPort                = 8080
 	defaultMetricsPort         = 9008
-	defaultDbType              = config.PostgreDBType
+	defaultDbType              = config.PostgresDBType
 	defaultSQLConnectionString = "postgresql://localhost:5432/postgres?user=postgres&password=admin&sslmode=disable"
 	defaultAdminUsername       = "blockwallet"
 	defaultAdminPassword       = "password123"
@@ -55,11 +55,9 @@ func init() {
 
 func parseDBType(dbType string) config.DBType {
 	switch dbType {
-	case string(config.SQLiteDBType):
-		return config.SQLiteDBType
-	case string(config.PostgreDBType):
-		return config.PostgreDBType
+	case string(config.PostgresDBType):
+		return config.PostgresDBType
 	}
-	logger.Sugar.Warnf("Unknown specified db type: %s. Using default: %s", dbType, config.SQLiteDBType)
-	return config.SQLiteDBType
+	logger.Sugar.Warnf("Unknown specified db type: %s. Using default: %s", dbType, config.PostgresDBType)
+	return config.PostgresDBType
 }

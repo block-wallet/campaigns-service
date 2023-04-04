@@ -3,8 +3,7 @@ package config
 type DBType string
 
 const (
-	SQLiteDBType  DBType = "SQLite"
-	PostgreDBType DBType = "PostgreSQL"
+	PostgresDBType DBType = "PostgreSQL"
 )
 
 type DBConfig struct {

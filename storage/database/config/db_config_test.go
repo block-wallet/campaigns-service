@@ -8,9 +8,9 @@ import (
 
 func TestNewDBConfig(t *testing.T) {
 	cases := []struct {
-		name         string
-		dbType       DBType
-		sqliteConfig *SQLConfig
+		name      string
+		dbType    DBType
+		sqlConfig *SQLConfig
 	}{
 		{
 			"all empty",
@@ -19,7 +19,7 @@ func TestNewDBConfig(t *testing.T) {
 		},
 		{
 			"db type SQLite",
-			SQLiteDBType,
+			PostgresDBType,
 			NewSQLConfig("test.db", false),
 		},
 	}
@@ -28,12 +28,12 @@ func TestNewDBConfig(t *testing.T) {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
 			// Operation
-			dbConfig := NewDBConfig(c.dbType, c.sqliteConfig)
+			dbConfig := NewDBConfig(c.dbType, c.sqlConfig)
 
 			// Validation
 			assert.NotNil(t, dbConfig)
 			assert.Equal(t, dbConfig.DBType, c.dbType)
-			assert.Equal(t, dbConfig.SQLConfig, c.sqliteConfig)
+			assert.Equal(t, dbConfig.SQLConfig, c.sqlConfig)
 		})
 	}
 }

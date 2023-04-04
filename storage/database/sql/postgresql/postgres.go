@@ -1,4 +1,4 @@
-package postgre
+package postgresql
 
 import (
 	"database/sql"
@@ -6,7 +6,7 @@ import (
 	"github.com/block-wallet/campaigns-service/utils/logger"
 )
 
-func NewPosgtreDatabase(connection string) (*sql.DB, error) {
+func NewPosgtresDatabase(connection string) (*sql.DB, error) {
 	logger.Sugar.Debugf("Connecting to: %v", connection)
 	db, err := sql.Open("postgres", connection)
 	if err != nil {
