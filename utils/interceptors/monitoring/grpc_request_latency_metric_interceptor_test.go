@@ -25,13 +25,13 @@ func TestServerMetricInterceptor_Fn(t *testing.T) {
 
 	requestLatencyMetricSender := &mocks.RequestLatencyMetricSender{}
 	requestLatencyMetricSender.On("Send", mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("time.Time"), "method_name", status.Error(codes.OK, ""))
+		mock.AnythingOfType("time.Time"), "method_name", mock.Anything, status.Error(codes.OK, ""))
 	interceptor := NewGRPCRequestLatencyMetricInterceptor(requestLatencyMetricSender)
 	_, err := interceptor.UnaryInterceptor()(context.Background(), empty.Empty{}, unaryInfo, unaryHandler)
 
 	assert.NoError(t, err)
 	requestLatencyMetricSender.AssertCalled(t, "Send", mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("time.Time"), "method_name", status.Error(codes.OK, ""))
+		mock.AnythingOfType("time.Time"), "method_name", mock.Anything, status.Error(codes.OK, ""))
 }
 
 func TestServerMetricInterceptor_Fn_WithError(t *testing.T) {
@@ -45,11 +45,11 @@ func TestServerMetricInterceptor_Fn_WithError(t *testing.T) {
 
 	requestLatencyMetricSender := &mocks.RequestLatencyMetricSender{}
 	requestLatencyMetricSender.On("Send", mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("time.Time"), "method_name", status.Error(codes.InvalidArgument, "invalid"))
+		mock.AnythingOfType("time.Time"), "method_name", mock.Anything, status.Error(codes.InvalidArgument, "invalid"))
 	interceptor := NewGRPCRequestLatencyMetricInterceptor(requestLatencyMetricSender)
 	_, err = interceptor.UnaryInterceptor()(context.Background(), empty.Empty{}, unaryInfo, unaryHandler)
 
 	assert.Error(t, err)
 	requestLatencyMetricSender.AssertCalled(t, "Send", mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("time.Time"), "method_name", status.Error(codes.InvalidArgument, "invalid"))
+		mock.AnythingOfType("time.Time"), "method_name", mock.Anything, status.Error(codes.InvalidArgument, "invalid"))
 }

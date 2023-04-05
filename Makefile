@@ -61,19 +61,6 @@ build:
 	@echo "----------------------------------------------------------------"
 	go build -a -ldflags "-w -X 'main.Version=${shell git rev-parse --short=7 HEAD}'" -o build/campaignsservice main.go
 
-.PHONY: db/up
-db/up:
-	@echo "----------------------------------------------------------------"
-	@echo " Running local postgres database..."
-	@echo "----------------------------------------------------------------"
-	docker-compose -f docker-compose.yml up -d postgres
-
-.PHONY: db/down
-db/down:
-	@echo "----------------------------------------------------------------"
-	@echo " Stopping local postgres database..."
-	@echo "----------------------------------------------------------------"
-	docker stop postgres-campaigns-service
 
 ################################################
 ############ docker builds and push ############
@@ -127,3 +114,17 @@ run: build
 
 .PHONY: up
 up: db/up build run
+
+.PHONY: db/up
+db/up:
+	@echo "----------------------------------------------------------------"
+	@echo " Running local postgres database..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml up -d postgres
+
+.PHONY: db/down
+db/down:
+	@echo "----------------------------------------------------------------"
+	@echo " Stopping local postgres database..."
+	@echo "----------------------------------------------------------------"
+	docker stop postgres-campaigns-service
