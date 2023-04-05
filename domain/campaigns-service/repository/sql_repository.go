@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/block-wallet/campaigns-service/domain/model"
+	"github.com/block-wallet/campaigns-service/utils/logger"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 )
@@ -123,7 +124,10 @@ func (r *SQLRepository) EnrollInCampaign(ctx context.Context, input *model.Enrol
 
 	_, err = tx.ExecContext(ctx, "INSERT INTO participants (campaign_id,account_address) VALUES ($1,$2)", input.CampaignId, input.Adddress.String())
 	if err != nil {
-		tx.Rollback()
+		if _err := tx.Rollback(); _err != nil {
+			logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())
+			return nil, _err
+		}
 		return nil, err
 	}
 
@@ -153,7 +157,10 @@ func (r *SQLRepository) UpdateCampaign(ctx context.Context, updates *model.Updat
 		q := fmt.Sprintf("UPDATE campaigns SET %v WHERE id = $%v;", joinedVariables, len(params))
 		_, err := tx.ExecContext(ctx, q, params...)
 		if err != nil {
-			tx.Rollback()
+			if _err := tx.Rollback(); _err != nil {
+				logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())
+				return nil, _err
+			}
 			return nil, err
 		}
 	}
@@ -161,7 +168,10 @@ func (r *SQLRepository) UpdateCampaign(ctx context.Context, updates *model.Updat
 	if updates.Winners != nil && len(*updates.Winners) > 0 {
 		_, err := tx.ExecContext(ctx, "UPDATE participants SET position = NULL where campaign_id = $1;", updates.Id)
 		if err != nil {
-			tx.Rollback()
+			if _err := tx.Rollback(); _err != nil {
+				logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())
+				return nil, _err
+			}
 			return nil, err
 		}
 		winners := *updates.Winners
@@ -169,7 +179,10 @@ func (r *SQLRepository) UpdateCampaign(ctx context.Context, updates *model.Updat
 			winnerAddress := winners[i].String()
 			_, err := tx.ExecContext(ctx, "UPDATE participants SET position = $1 WHERE campaign_id = $2 and account_address = $3;", i+1, updates.Id, winnerAddress)
 			if err != nil {
-				tx.Rollback()
+				if _err := tx.Rollback(); _err != nil {
+					logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())
+					return nil, _err
+				}
 				return nil, err
 			}
 		}
@@ -217,7 +230,10 @@ func (r *SQLRepository) GetTokenById(ctx context.Context, id string) (*model.Mul
 	}
 
 	tokenRow := tokenrow{}
-	row.Scan(&tokenRow.id, &tokenRow.name, &tokenRow.description, &tokenRow.decimals)
+	err = row.Scan(&tokenRow.id, &tokenRow.name, &tokenRow.description, &tokenRow.decimals)
+	if err != nil {
+		return nil, err
+	}
 
 	contracts, err := r.getTokenContracts(ctx, id)
 	if err != nil {
@@ -244,7 +260,7 @@ func (r *SQLRepository) getTokenContracts(ctx context.Context, id string) (*map[
 
 	for contractsRows.Next() {
 		var chainid, address string
-		contractsRows.Scan(&chainid, &address)
+		err := contractsRows.Scan(&chainid, &address)
 		if err != nil {
 			return nil, err
 		}
@@ -282,14 +298,20 @@ func (r *SQLRepository) NewToken(ctx context.Context, token *model.MultichainTok
 	_, err = tx.ExecContext(ctx, "INSERT INTO tokens (id,name,symbol,decimals) VALUES ($1,$2,$3,$4)", tokenId, token.Name, token.Symbol, token.Decimals)
 
 	if err != nil {
-		tx.Rollback()
+		if _err := tx.Rollback(); _err != nil {
+			logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())
+			return nil, _err
+		}
 		return nil, err
 	}
 
 	for chain, addrr := range token.ContractAddresses {
 		_, err := tx.ExecContext(ctx, "INSERT INTO tokens_contracts (token_id,chain_id,address) VALUES ($1,$2,$3)", tokenId, chain, addrr.String())
 		if err != nil {
-			tx.Rollback()
+			if _err := tx.Rollback(); _err != nil {
+				logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())
+				return nil, _err
+			}
 			return nil, err
 		}
 	}
@@ -310,7 +332,7 @@ func (r *SQLRepository) GetAllTokens(ctx context.Context) (*[]model.MultichainTo
 
 	for rows.Next() {
 		tokenRow := tokenrow{}
-		rows.Scan(&tokenRow.id, &tokenRow.name, &tokenRow.description, &tokenRow.decimals)
+		err := rows.Scan(&tokenRow.id, &tokenRow.name, &tokenRow.description, &tokenRow.decimals)
 		if err != nil {
 			continue
 		}

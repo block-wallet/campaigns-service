@@ -29,7 +29,7 @@ lint:
 	@echo "----------------------------------------------------------------"
 	@echo " ⚙️  Linting code..."
 	@echo "----------------------------------------------------------------"
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.46.2 run -E gofmt --out-format=github-actions --timeout=10m ./...
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2 run -E gofmt --out-format=github-actions --timeout=10m ./...
 
 .PHONY: test
 test:
