@@ -16,7 +16,6 @@ import (
 	campaignsservicevalidator "github.com/block-wallet/campaigns-service/domain/campaigns-service/validator"
 	sqldb "github.com/block-wallet/campaigns-service/storage/database/sql"
 	"github.com/block-wallet/campaigns-service/utils/auth"
-	"github.com/block-wallet/campaigns-service/utils/grpc/converter"
 
 	"github.com/block-wallet/campaigns-service/utils/interceptors"
 
@@ -88,7 +87,7 @@ func (r *Runnable) Run(args Args) *grpc.Server {
 	repository := campaignsrepository.NewSQLRepository(sqlDatabase)
 	campaignService := campaignsservice.NewServiceImpl(repository)
 	campaignsServiceValidator := campaignsservicevalidator.NewRequestValidator()
-	campaignsServiceConverter := campaignsconverter.NewConverterImpl(converter.NewGRPCConverter())
+	campaignsServiceConverter := campaignsconverter.NewConverterImpl()
 	authenticator := auth.NewBasicAuth(adminUsername, adminPassword)
 
 	grpcService := campaignsgrpcservice.GRPCService(campaignsgrpcservice.Options{

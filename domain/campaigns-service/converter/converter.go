@@ -6,8 +6,7 @@ import (
 )
 
 type Converter interface {
-	ConvertFromModelCampaignToProtoCampaign(campaign *model.Campaign) (*campaignservicev1service.Campaign, error)
-	ConvertFromProtoCampaignToModelCampaign(campaign *campaignservicev1service.Campaign) (*model.Campaign, error)
+	ConvertFromModelCampaignToProtoCampaign(campaign *model.Campaign) *campaignservicev1service.Campaign
 	ConvertFromProtoCampaignsFiltersToModelCampaignFilters(filters *campaignservicev1service.GetCampaignsFilters) (*model.GetCampaignsFilters, error)
 	ConvertFromProtoCreateCampaignToModelCreateCampaign(campaignInput *campaignservicev1service.CreateCampaignMsg) (*model.CreateCampaignInput, error)
 	ConvertFromProtoEnrollInCampaignToModelEnrollInCampaign(campaignInput *campaignservicev1service.EnrollInCampaignMsg) *model.EnrollInCampaignInput

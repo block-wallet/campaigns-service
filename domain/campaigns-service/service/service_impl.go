@@ -160,7 +160,7 @@ func (s *ServiceImpl) canUpdateCampaign(current *model.Campaign, updates *model.
 	case model.STATUS_ACTIVE:
 		{
 			if updates.Stauts != nil && *updates.Stauts == model.STATUS_PENDING {
-				return false, errors.NewFailedPrecondition("you can set this campaign to PENDING. You can only either CANCEL or FINISH it.")
+				return false, errors.NewFailedPrecondition("you can't set this campaign to PENDING. You can only either CANCEL or FINISH it.")
 			}
 		}
 	}

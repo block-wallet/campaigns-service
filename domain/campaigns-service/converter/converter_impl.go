@@ -6,21 +6,22 @@ import (
 
 	"github.com/block-wallet/campaigns-service/domain/model"
 	campaignservicev1service "github.com/block-wallet/campaigns-service/protos/src/campaignsservicev1/campaigns"
-	"github.com/block-wallet/campaigns-service/utils/grpc/converter"
 	"github.com/block-wallet/campaigns-service/utils/signatures"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 // ConverterImpl has the responsibility to convert from grpc objects to our domain objects and vice versa.
 type ConverterImpl struct {
-	grpcConverter *converter.GRPCConverter
 }
 
-func NewConverterImpl(grpcConverter *converter.GRPCConverter) *ConverterImpl {
-	return &ConverterImpl{grpcConverter: grpcConverter}
+func NewConverterImpl() *ConverterImpl {
+	return &ConverterImpl{}
 }
 
-func (c *ConverterImpl) ConvertFromModelCampaignToProtoCampaign(campaign *model.Campaign) (*campaignservicev1service.Campaign, error) {
+func (c *ConverterImpl) ConvertFromModelCampaignToProtoCampaign(campaign *model.Campaign) *campaignservicev1service.Campaign {
+	if campaign == nil {
+		return nil
+	}
 	ret := &campaignservicev1service.Campaign{
 		Id:              campaign.Id,
 		SupportedChains: campaign.SupportedChains,
@@ -43,46 +44,19 @@ func (c *ConverterImpl) ConvertFromModelCampaignToProtoCampaign(campaign *model.
 		}
 	}
 
-	return ret, nil
+	return ret
 }
-
-func (c *ConverterImpl) ConvertFromProtoCampaignToModelCampaign(campaign *campaignservicev1service.Campaign) (*model.Campaign, error) {
-	startDate, e := time.Parse(model.CampaignTimeFormatLayout, campaign.StartDate)
-	if e != nil {
-		return nil, e
-	}
-	endDate, e := time.Parse(model.CampaignTimeFormatLayout, campaign.EndDate)
-	if e != nil {
-		return nil, e
-	}
-	return &model.Campaign{
-		Id:              campaign.Id,
-		SupportedChains: campaign.SupportedChains,
-		Name:            campaign.Name,
-		Description:     campaign.Description,
-		Status:          campaign_FromProtoStatusToModelStatus(campaign.Status),
-		StartDate:       startDate,
-		EndDate:         endDate,
-		Rewards: &model.Reward{
-			Token:   campaign_FromProtoTokenToModelToken(campaign.Rewards.Token),
-			Amounts: campaign_FromProtoAmountsToModelAmounts(campaign.Rewards.Amounts),
-			Type:    rewards_fromProtoTypeToModelType(campaign.Rewards.Type),
-		},
-		Accounts:      campaign_FromStringSliceToAddressesSlice(campaign.Accounts),
-		Winners:       campaign_FromStringSliceToAddressesSlice(campaign.Winners),
-		Tags:          campaign.Tags,
-		EnrollMessage: campaign.EnrollMessage,
-	}, nil
-}
-
 func (c *ConverterImpl) ConvertFromProtoCampaignsFiltersToModelCampaignFilters(filters *campaignservicev1service.GetCampaignsFilters) (*model.GetCampaignsFilters, error) {
 	if filters == nil {
 		return &model.GetCampaignsFilters{}, nil
 	}
+	campaignFilters := &model.GetCampaignsFilters{}
+	if len(filters.Tags) > 0 {
+		campaignFilters.Tags = &filters.Tags
+	}
 
-	campaignFilters := &model.GetCampaignsFilters{
-		Tags:     &filters.Tags,
-		ChainIds: &filters.ChainIds,
+	if len(filters.ChainIds) > 0 {
+		campaignFilters.ChainIds = &filters.ChainIds
 	}
 
 	if filters.FromDate != nil {
@@ -252,10 +226,6 @@ func rewards_fromProtoTypeToModelType(rewardType campaignservicev1service.Reward
 	return model.PODIUM_REWARD
 }
 
-func campaign_FromProtoAmountsToModelAmounts(amounts []string) []*big.Int {
-	return convertMultipleSlice(amounts, stringToBigInt)
-}
-
 func campaign_FromModelAmountsToProtoAmounts(amounts []*big.Int) []string {
 	return convertMultipleSlice(amounts, bigIntToString)
 }
@@ -294,10 +264,4 @@ func convertMapValues[I string | common.Address, O string | common.Address](inpu
 
 func bigIntToString(value *big.Int) string {
 	return value.String()
-}
-
-func stringToBigInt(value string) *big.Int {
-	b := new(big.Int)
-	b, _ = b.SetString(value, 10)
-	return b
 }

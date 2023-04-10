@@ -48,11 +48,7 @@ func (h *Handler) GetCampaigns(ctx context.Context, req *campaignservicev1servic
 
 	protoCampaigns := make([]*campaignservicev1service.Campaign, 0, len(*modelCampaigns))
 	for _, modelCampaign := range *modelCampaigns {
-		protoCampaign, _err := h.converter.ConvertFromModelCampaignToProtoCampaign(&modelCampaign)
-		if _err != nil {
-			logger.Sugar.WithCtx(ctx).Errorf("Error parsing campaign: %s", err.Error())
-			return nil, err
-		}
+		protoCampaign := h.converter.ConvertFromModelCampaignToProtoCampaign(&modelCampaign)
 		protoCampaigns = append(protoCampaigns, protoCampaign)
 	}
 
@@ -76,11 +72,7 @@ func (h *Handler) GetCampaignById(ctx context.Context, req *campaignservicev1ser
 		return nil, errors.NewNotFound(req.GetId()).ToGRPCError()
 	}
 
-	protoCampaign, _err := h.converter.ConvertFromModelCampaignToProtoCampaign(modelCampaign)
-	if _err != nil {
-		logger.Sugar.WithCtx(ctx).Errorf("Error parsing campaign: %s", _err.Error())
-		return nil, _err
-	}
+	protoCampaign := h.converter.ConvertFromModelCampaignToProtoCampaign(modelCampaign)
 	return &campaignservicev1service.GetCampaignByIdReply{Campaign: protoCampaign}, nil
 }
 
@@ -124,11 +116,8 @@ func (h *Handler) CreateCampaign(ctx context.Context, req *campaignservicev1serv
 		return nil, err
 	}
 
-	protoCampaign, _err := h.converter.ConvertFromModelCampaignToProtoCampaign(modelCampaign)
-	if _err != nil {
-		logger.Sugar.WithCtx(ctx).Errorf("Error parsing campaign: %s", _err.Error())
-		return nil, errors.NewInternal(_err.Error())
-	}
+	protoCampaign := h.converter.ConvertFromModelCampaignToProtoCampaign(modelCampaign)
+
 	return &campaignservicev1service.CreateCampaignReply{Campaign: protoCampaign}, nil
 }
 
@@ -148,12 +137,7 @@ func (h *Handler) UpdateCampaign(ctx context.Context, req *campaignservicev1serv
 		return nil, err
 	}
 
-	protoCampaign, _err := h.converter.ConvertFromModelCampaignToProtoCampaign(modelCamaping)
-	if err != nil {
-		logger.Sugar.WithCtx(ctx).Errorf("Error parsing campaign: %s", _err.Error())
-		return nil, errors.NewInternal(_err.Error())
-	}
-
+	protoCampaign := h.converter.ConvertFromModelCampaignToProtoCampaign(modelCamaping)
 	return &campaignservicev1service.UpdateCampaignReply{Campaign: protoCampaign}, nil
 }
 
