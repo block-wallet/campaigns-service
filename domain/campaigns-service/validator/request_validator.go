@@ -20,6 +20,22 @@ func NewRequestValidator() *RequestValidator {
 }
 
 func (r *RequestValidator) ValidateGetCampaignsRequest(req *campaignservicev1service.GetCampaignsMsg) errors.RichError {
+	if req.Filters != nil {
+		fromDateP := req.Filters.FromDate
+		toDateP := req.Filters.ToDate
+		if fromDate := fromDateP.GetValue(); fromDate != "" {
+			_, err := time.Parse(model.CampaignTimeFormatLayout, fromDate)
+			if err != nil {
+				return errors.NewInvalidArgument(fmt.Sprintf("Invalid from_date format. Please make sure it has the following format: %v", model.CampaignTimeFormatLayout))
+			}
+		}
+		if toDate := toDateP.GetValue(); toDate != "" {
+			_, err := time.Parse(model.CampaignTimeFormatLayout, toDate)
+			if err != nil {
+				return errors.NewInvalidArgument(fmt.Sprintf("Invalid to_date format. Please make sure it has the following format: %v", model.CampaignTimeFormatLayout))
+			}
+		}
+	}
 	return nil
 }
 
