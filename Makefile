@@ -38,14 +38,6 @@ test:
 	@echo "----------------------------------------------------------------"
 	go test ./...
 
-.PHONY: integration-test
-integration-test:
-	@echo "----------------------------------------------------------------"
-	@echo " ✅  Testing the service..."
-	@echo "----------------------------------------------------------------"
-	yarn --cwd integration-tests/ install
-	node ./integration-tests/app
-
 .PHONY: generate
 generate:
 	@echo "----------------------------------------------------------------"
@@ -53,6 +45,12 @@ generate:
 	@echo "----------------------------------------------------------------"
 	buf generate
 
+.PHONY: mocks
+mocks:
+	@echo "----------------------------------------------------------------"
+	@echo " ⚙️  Generating Mocks..."
+	@echo "----------------------------------------------------------------"
+	mockery --dir=domain/campaigns-service --output=domain/campaigns-service/mocks --outpkg=campaignsservicemocks --all
 
 .PHONY: build
 build:
