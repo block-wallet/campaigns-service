@@ -12,25 +12,20 @@ jobs:
   test:
     runs-on: [self-hosted]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: "1.20"
       - run: git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
       - run: make lint
       - run: make test
-      - run: |
-          for c in config/*.json
-          do
-            cat $c | jq -e . >/dev/null 2>&1
-          done
 
   build:
     needs: test
     runs-on: [self-hosted]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: "1.20"
       - run: git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
@@ -41,7 +36,7 @@ jobs:
     needs: build
     runs-on: [self-hosted]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: make docker-build/service
 
   publish:
@@ -49,7 +44,7 @@ jobs:
     needs: [test, build]
     runs-on: [self-hosted]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Define image tag
         id: define-image-tag

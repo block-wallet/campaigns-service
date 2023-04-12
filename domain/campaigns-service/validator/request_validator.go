@@ -93,22 +93,16 @@ func (r *RequestValidator) ValidateCreateCampaignRequest(req *campaignservicev1s
 		amounts := campaignReq.Rewards.Amounts
 		switch rewardsType {
 		case campaignservicev1service.RewardType_REWARD_TYPE_DYNAMIC:
-			{
-				if len(amounts) > 0 {
-					return errors.NewInvalidArgument("you can't specify amounts for a DYNAMIC reward type campaign")
-				}
+			if len(amounts) > 0 {
+				return errors.NewInvalidArgument("you can't specify amounts for a DYNAMIC reward type campaign")
 			}
 		case campaignservicev1service.RewardType_REWARD_TYPE_SINGLE:
-			{
-				if len(amounts) != 1 {
-					return errors.NewInvalidArgument("you need to specify only one amount for SINGLE reward type campaign.")
-				}
+			if len(amounts) != 1 {
+				return errors.NewInvalidArgument("you need to specify only one amount for SINGLE reward type campaign.")
 			}
 		case campaignservicev1service.RewardType_REWARD_TYPE_PODIUM:
-			{
-				if len(amounts) == 0 {
-					return errors.NewInvalidArgument("campaign rewards amounts cannot be empty for either PODIUM rewards type campaign.")
-				}
+			if len(amounts) == 0 {
+				return errors.NewInvalidArgument("campaign rewards amounts cannot be empty for either PODIUM rewards type campaign.")
 			}
 		}
 
@@ -170,16 +164,12 @@ func (r *RequestValidator) ValidateUpdateCampaignRequest(req *campaignservicev1s
 	if status != campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_INVALID {
 		switch status {
 		case campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_FINISHED:
-			{
-				if len(req.Winners) == 0 {
-					return errors.NewInvalidArgument("you must specify winners to finish a campaign")
-				}
+			if len(req.Winners) == 0 {
+				return errors.NewInvalidArgument("you must specify winners to finish a campaign")
 			}
 		case campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_ACTIVE, campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_CANCELLED:
-			{
-				if len(req.Winners) > 0 {
-					return errors.NewInvalidArgument("you can only set campaign winners by updating its status to FINISHED")
-				}
+			if len(req.Winners) > 0 {
+				return errors.NewInvalidArgument("you can only set campaign winners by updating its status to FINISHED")
 			}
 		}
 	} else {
