@@ -110,15 +110,40 @@ run: build
 	@echo "----------------------------------------------------------------"
 	./build/campaignsservice serve
 
-.PHONY: up
-up: db/up build run
+.PHONY: dev/up
+dev/up:
+	@echo "----------------------------------------------------------------"
+	@echo " Running local dev environment using docker-compose..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml up
+
+.PHONY: dev/down
+dev/down:
+	@echo "----------------------------------------------------------------"
+	@echo " Stopping local dev environment..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml down
+
+.PHONY: service/up
+service/up:
+	@echo "----------------------------------------------------------------"
+	@echo " Running local campaigns-service using docker..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml up campaigns-service
+
+.PHONY: service/down
+service/down:
+	@echo "----------------------------------------------------------------"
+	@echo " Stopping local campaigns-service..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml down campaigns-service
 
 .PHONY: db/up
 db/up:
 	@echo "----------------------------------------------------------------"
 	@echo " Running local postgres database..."
 	@echo "----------------------------------------------------------------"
-	docker-compose -f docker-compose.yml up -d postgres
+	docker-compose -f docker-compose.yml up -d postgres-database
 
 .PHONY: db/down
 db/down:

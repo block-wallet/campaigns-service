@@ -45,6 +45,8 @@ This project runs the migrations automatically when the server starts. If would 
 
 ## Building and running locally
 
+### Using native OS env
+
 On the base path of this project you can run `make build`. After that, running `./campaignsservice serve` will run both the
 gRPC endpoint as well as the REST API in port 8080.
 
@@ -52,7 +54,15 @@ Also, you can can run `make run` and the result will be the same.
 
 You can then test that the server is working issuing `curl localhost:8080/ready`. That must return `YES`.
 
-Alternatively it is possible to generate a `Docker image` and run the service there by running this command:
+### Using docker
+
+You can use `docker-compose` to run the campaignsservice and the postgres database without any extra configuration. To do so, run:
+
+- `make dev/up` -> Run postgres database and service. Run `make dev/down` to stop it.
+- `make service/up` -> Run just the campaignsservice. Run `make service/down` to stop it.
+- `make db/up` -> Run just the postgres database. Run `make db/down` to stop it.
+
+If you don't want to use `docker-compose` it is possible to generate a `Docker image` manually and run the service there by running this command:
 
 `docker build --pull --rm -f "Dockerfile" -t campaignsservice:latest "."`
 

@@ -1,7 +1,25 @@
-version: '3.5'
+version: '3.8'
+
+networks:
+  campaigns-network:
+    driver: bridge
 
 services:
-  postgres:
+  campaigns-service:
+    build:
+      context: .
+    container_name: campaigns-service
+    image: campaignsservice:latest
+    environment:
+      - SQL_CONNECTION=postgresql://postgres-database:5432/postgres?user=postgres&password=admin&sslmode=disable
+    depends_on:
+      postgres-database:
+        condition: service_healthy
+    links:
+      - postgres-database
+    networks:
+      - campaigns-network
+  postgres-database:
     container_name: postgres-campaigns-service
     image: postgres:latest
     environment:
@@ -9,10 +27,16 @@ services:
       POSTGRES_PASSWORD: admin
       PGDATA: /data/postgres
     volumes:
-       - ./postgres-db:/data/postgres
+      - ./postgres-db:/data/postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
-      - "5432:5432"
-
+      - '5432:5432'
+    networks:
+      - campaigns-network
 
 volumes:
   postgres-db:
