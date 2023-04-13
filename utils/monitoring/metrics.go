@@ -32,11 +32,4 @@ var (
 		"Count server panic",
 		[]string{},
 	)
-	RedisLatencyMetricSender = histogram.NewPrometheusLatencyMetricSender(
-		NAMESPACE,
-		"redis_latency_ms",
-		"Redis latency histogram, labeled by method and status",
-		defBucketsMs,
-		[]string{MethodLabel, StatusLabel},
-	)
 )

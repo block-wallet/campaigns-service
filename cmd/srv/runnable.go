@@ -16,6 +16,7 @@ import (
 	campaignsservicevalidator "github.com/block-wallet/campaigns-service/domain/campaigns-service/validator"
 	sqldb "github.com/block-wallet/campaigns-service/storage/database/sql"
 	"github.com/block-wallet/campaigns-service/utils/auth"
+	monitoreddb "github.com/block-wallet/campaigns-service/utils/monitoring/monitored_db"
 
 	"github.com/block-wallet/campaigns-service/utils/interceptors"
 
@@ -83,6 +84,10 @@ func (r *Runnable) Run(args Args) *grpc.Server {
 	if err = sqlDatabase.Ping(); err != nil {
 		panic(err)
 	}
+
+	//register db metrics collector
+	metricsCollector := monitoreddb.NewPrometheusDbMetricsCollector("campaigns-db", sqlDatabase)
+	metricsCollector.Register()
 
 	repository := campaignsrepository.NewSQLRepository(sqlDatabase)
 	campaignService := campaignsservice.NewServiceImpl(repository)
