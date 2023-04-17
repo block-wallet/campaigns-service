@@ -113,8 +113,8 @@ func (r *RequestValidator) ValidateCreateCampaignRequest(req *campaignservicev1s
 				return errors.NewInvalidArgument("campaign rewards amounts cannot be empty.")
 			}
 			parsedAmount := new(big.Int)
-			parsedAmount, _ = parsedAmount.SetString(amount, 10)
-			if parsedAmount == nil {
+			parsedAmount, ok := parsedAmount.SetString(amount, 10)
+			if !ok {
 				return errors.NewInvalidArgument(fmt.Sprintf("invalid amount number: %v", amount))
 			}
 			if parsedAmount.Cmp(zero) <= 0 {
