@@ -46,10 +46,10 @@ func (h *Handler) GetCampaigns(ctx context.Context, req *campaignservicev1servic
 		return nil, err.ToGRPCError()
 	}
 
-	protoCampaigns := make([]*campaignservicev1service.Campaign, 0, len(*modelCampaigns))
-	for _, modelCampaign := range *modelCampaigns {
+	protoCampaigns := make([]*campaignservicev1service.Campaign, len(*modelCampaigns))
+	for i, modelCampaign := range *modelCampaigns {
 		protoCampaign := h.converter.ConvertFromModelCampaignToProtoCampaign(&modelCampaign)
-		protoCampaigns = append(protoCampaigns, protoCampaign)
+		protoCampaigns[i] = protoCampaign
 	}
 
 	return &campaignservicev1service.GetCampaignsReply{Campaigns: protoCampaigns}, nil
