@@ -1,0 +1,23 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: campaigns-postgres
+spec:
+  teamId: "acid"
+  volume:
+    size: 10Gi
+  numberOfInstances: 2
+  users:
+    # database owner
+    campaigns:
+    - superuser
+    - createdb
+
+    # role for application foo
+    # foo_user: # or 'foo_user: []'
+
+  #databases: name->owner
+  databases:
+    campaigns: campaigns
+  postgresql:
+    version: "15"

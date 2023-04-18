@@ -7,8 +7,8 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/smartystreets/goconvey/convey"
 
-	healthgrpcservice "github.com/block-wallet/golang-service-template/domain/health/service/grpc"
-	ethservicev1health "github.com/block-wallet/golang-service-template/protos/ethservicev1/src/health"
+	healthgrpcservice "github.com/block-wallet/campaigns-service/domain/health/service/grpc"
+	campaignsservicev1health "github.com/block-wallet/campaigns-service/protos/src/campaignsservicev1/health"
 	. "github.com/smartystreets/assertions"
 )
 
@@ -20,7 +20,7 @@ func TestHealthHandler(t *testing.T) {
 			convey.Convey("Then the status is ALIVE", func() {
 				convey.So(err, ShouldBeNil)
 				convey.So(responseMsg, ShouldNotBeNil)
-				convey.So(responseMsg.Status, ShouldEqual, ethservicev1health.HealthStatus_HEALTH_STATUS_ALIVE)
+				convey.So(responseMsg.Status, ShouldEqual, campaignsservicev1health.HealthStatus_HEALTH_STATUS_ALIVE)
 			})
 		})
 	})

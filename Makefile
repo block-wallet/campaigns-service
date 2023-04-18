@@ -1,135 +1,69 @@
-SHELL=/bin/sh
-include Makefile.*
-TAG=${shell git rev-parse --short=5 HEAD}
-AWS_USERNAME=AWS
+TAG=${shell git rev-parse --short=7 HEAD}
 REGION=eu-central-1
 ACCOUNT=472641090641.dkr.ecr.$(REGION).amazonaws.com
-SERVICE="go-template"
-PROD_NAMESPACE=$(SERVICE)
-DEV_NAMESPACE=$(SERVICE)-dev
+SERVICE=campaigns-service
 ECR=$(ACCOUNT)/$(SERVICE)
-ENV?=
-LATEST=false
+GH_ACCESS_TOKEN?=
+TAG_INTEGRATION_TESTS=$(TAG)-integration-tests
+AWS_USERNAME=AWS
 
-################################################################################
-## Protos Go src & Doc generation
-################################################################################
-.PHONY: generate
-generate:
-	@echo "----------------------------------------------------------------"
-	@echo " ⚙️  Creating (gRPC & endpoints) src and docs from protos..."
-	@echo "----------------------------------------------------------------"
-	$(PROTOTOOL) generate
+# GitHub commands
+.PHONY: gh
+gh:
+	@[ "${GH_ACCESS_TOKEN}" ] && echo "GitHub token found" || ( echo "GitHub token is not set"; exit 1 )
 
-################################################################################
-## Binary build & execution
-################################################################################
-.PHONY: install
-install:
-	@echo "----------------------------------------------------------------"
-	@echo " ⚙️  Installing protoc-gen-go..."
-	@echo "----------------------------------------------------------------"
-	$(GOINSTALL) github.com/golang/protobuf/protoc-gen-go
-	@echo "----------------------------------------------------------------"
-	@echo " ⚙️  Installing protoc-gen-grpc-gateway..."
-	@echo "----------------------------------------------------------------"
-	$(GOINSTALL) github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-	@echo "----------------------------------------------------------------"
-	@echo " ⚙️  Installing protoc-gen-doc..."
-	@echo "----------------------------------------------------------------"
-	$(GOINSTALL) github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc
-	$(GOMOD) tidy
+
+#######################################################
+############ formats, lint, test and build ############
+#######################################################
 
 .PHONY: fmt
 fmt:
 	@echo "----------------------------------------------------------------"
 	@echo " ⚙️  Formatting code..."
 	@echo "----------------------------------------------------------------"
-	$(GO) fmt ./...
-	$(GOIMPORTS) -w .
-	$(GOGET) -d github.com/uber/prototool/cmd/prototool
-	$(PROTOTOOL) format -w
-	$(GOMOD) tidy
+	gofmt -s -w ./.
 
 .PHONY: lint
 lint:
 	@echo "----------------------------------------------------------------"
 	@echo " ⚙️  Linting code..."
 	@echo "----------------------------------------------------------------"
-	$(GOLINT) run
-	$(GOGET) -d github.com/uber/prototool/cmd/prototool
-	$(PROTOTOOL) lint
-	$(GOMOD) tidy
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2 run -E gofmt --out-format=github-actions --timeout=10m ./...
 
 .PHONY: test
 test:
 	@echo "----------------------------------------------------------------"
-	@echo " ✅  Testing code..."
+	@echo " ⚙️  Testign the code..."
 	@echo "----------------------------------------------------------------"
-	$(GO) test ./... -v -coverprofile=coverage.out
+	go test ./...
 
-.PHONY: test-report
-test-report:
+.PHONY: generate
+generate:
 	@echo "----------------------------------------------------------------"
-	@echo " ✅  Testing code with report..."
+	@echo " ⚙️  Generating GRPC code..."
 	@echo "----------------------------------------------------------------"
-	$(GO) get -u github.com/jstemmer/go-junit-report
-	$(GO) test ./... -v -coverprofile=coverage.out 2>&1 | go-junit-report -set-exit-code > report.xml
+	buf generate
 
-.PHONY: coverage
-coverage:
+.PHONY: mocks
+mocks:
 	@echo "----------------------------------------------------------------"
-	@echo " 📊  Checking coverage..."
+	@echo " ⚙️  Generating Mocks..."
 	@echo "----------------------------------------------------------------"
-	$(GOTOOL) cover -html=coverage.out -o coverage.html
-	$(GOTOOL) cover -func=coverage.out
-
-.PHONY: godoc
-godoc:
-	@echo "----------------------------------------------------------------"
-	@echo " 📄 Serving Go documentation..."
-	@echo "----------------------------------------------------------------"
-	@echo "Serving documentation at ~> http://localhost:9090"
-	$(GODOC) -http=:9090 > /dev/null
-
-.PHONY: compile
-compile:
-	@echo "----------------------------------------------------------------"
-	@echo " ⚙️  Compiling code..."
-	@echo "----------------------------------------------------------------"
-	$(GOBUILD) ./...
-	$(PROTOTOOL) compile
-
-.PHONY: deps
-deps:
-	@echo "----------------------------------------------------------------"
-	@echo " ⬇️  Downloading dependencies..."
-	@echo "----------------------------------------------------------------"
-	$(GOGET) ./...
+	mockery --dir=domain/campaigns-service --output=domain/campaigns-service/mocks --outpkg=campaignsservicemocks --all
 
 .PHONY: build
-build: deps fmt
+build:
 	@echo "----------------------------------------------------------------"
-	@echo " 📦 Building binary..."
+	@echo " :package: Building binaries..."
 	@echo "----------------------------------------------------------------"
-	$(GOBUILD) -a -ldflags "-w -X 'main.Version=$(TAG)'" -tags 'netgo osusergo' -o ethservice main.go
-
-.PHONY: run
-run: build
-	@echo "----------------------------------------------------------------"
-	@echo " ️🏃 Running..."
-	@echo "----------------------------------------------------------------"
-	./ethservice serve
-
-.PHONY: all
-all: generate lint build
-
-################################################################################
+	go build -a -ldflags "-w -X 'main.Version=${shell git rev-parse --short=7 HEAD}'" -o build/campaignsservice main.go
 
 
-################################################################################
-## Docker commands
-################################################################################
+################################################
+############ docker builds and push ############
+################################################
+
 .PHONY: docker-login
 docker-login:
 	@echo "----------------------------------------------------------------"
@@ -137,42 +71,83 @@ docker-login:
 	@echo "----------------------------------------------------------------"
 	aws ecr get-login-password --region $(REGION) | docker login --username $(AWS_USERNAME) --password-stdin $(ACCOUNT)
 
-.PHONY: docker-build
-docker-build: 
+.PHONY: docker-build/service
+docker-build/service:
 	@echo "----------------------------------------------------------------"
-	@echo " 🔨 Building image $(TAG)..."
+	@echo " ⚙️  Building the service Docker image..."
 	@echo "----------------------------------------------------------------"
-	docker pull $(ECR):latest || true
-	docker build . --network=host --cache-from $(ECR):latest -t $(ECR):$(TAG) --build-arg	VERSION=$(TAG)
+	docker build . -f Dockerfile --no-cache --network=host -t $(ECR):$(TAG) --build-arg VERSION=$(TAG) --build-arg GH_ACCESS_TOKEN=$(GH_ACCESS_TOKEN)
 
-.PHONY: docker-push
-docker-push: 
+.PHONY: docker-push/service
+docker-push/service:
 	@echo "----------------------------------------------------------------"
-	@echo " ⬆️ Pushing image $(TAG)..."
+	@echo " ⬆️ Pushing service image $(TAG)..."
 	@echo "----------------------------------------------------------------"
 	docker push $(ECR):$(TAG)
-ifeq ($(LATEST), true)
-	docker tag $(ECR):$(TAG) $(ECR):latest
-	docker push $(ECR):latest
-endif
 
-.PHONY: docker-publish
-docker-publish: docker-build docker-push
 
-################################################################################
-## Deploy commands
-################################################################################
+.PHONY: docker-publish/integration-tests
+docker-publish/integration-tests: docker-build/integration-tests docker-push/integration-tests
 
-.PHONY: deploy
-deploy:
+
+.PHONY: docker-publish/service
+docker-publish/service: docker-build/service docker-push/service
+
+.PHONY: aws/login
+aws/login:
+	aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin $(ACCOUNT)
+
+
+#######################################################
+###################### local run ######################
+#######################################################
+
+.PHONY: run
+run: build
 	@echo "----------------------------------------------------------------"
-	@echo " 🖥️ Deploying to $(ENV)..."
+	@echo " ️🏃 Running..."
+	@echo " :package: Building binaries..."
 	@echo "----------------------------------------------------------------"
-ifeq ($(ENV), prod)
-	kubectl --namespace $(PROD_NAMESPACE) apply -f k8s/prod/main.yaml
-else ifeq ($(ENV), dev)
-		kubectl --namespace $(DEV_NAMESPACE) apply -f k8s/dev/main.yaml
-else
-	@echo "Invalid ENV"
-	exit 1
-endif
+	./build/campaignsservice serve
+
+.PHONY: dev/up
+dev/up:
+	@echo "----------------------------------------------------------------"
+	@echo " Running local dev environment using docker-compose..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml up
+
+.PHONY: dev/down
+dev/down:
+	@echo "----------------------------------------------------------------"
+	@echo " Stopping local dev environment..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml down
+
+.PHONY: service/up
+service/up:
+	@echo "----------------------------------------------------------------"
+	@echo " Running local campaigns-service using docker..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml up campaigns-service
+
+.PHONY: service/down
+service/down:
+	@echo "----------------------------------------------------------------"
+	@echo " Stopping local campaigns-service..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml down campaigns-service
+
+.PHONY: db/up
+db/up:
+	@echo "----------------------------------------------------------------"
+	@echo " Running local postgres database..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml up -d postgres-database
+
+.PHONY: db/down
+db/down:
+	@echo "----------------------------------------------------------------"
+	@echo " Stopping local postgres database..."
+	@echo "----------------------------------------------------------------"
+	docker stop postgres-campaigns-service

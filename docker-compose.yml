@@ -1,57 +1,46 @@
-version: '2'
-
+version: '3.8'
 
 networks:
-  app-tier:
+  campaigns-network:
     driver: bridge
 
 services:
-  service:
-    build: .
-    ports:
-      - "8080:8080"
-      - "8443:8443"
-      - "9008:9008"
+  campaigns-service:
+    build:
+      context: .
+    container_name: campaigns-service
+    image: campaignsservice:latest
     environment:
-      KV_TYPE: redis
-      REDIS_READ_ONLY: "false"
-      REDIS_SENTINEL_HOSTS: redis-sentinel:26379
-    networks:
-      - app-tier
+      - SQL_CONNECTION=postgresql://postgres-database:5432/postgres?user=postgres&password=admin&sslmode=disable
     depends_on:
-      - redis-sentinel
-  redis:
-    image: 'bitnami/redis:latest'
-    environment:
-      - REDIS_REPLICATION_MODE=master
-      - ALLOW_EMPTY_PASSWORD=yes
-    networks:
-      - app-tier
+      postgres-database:
+        condition: service_healthy
     ports:
-      - '6379'
-  redis-slave:
-    image: 'bitnami/redis:latest'
-    environment:
-      - REDIS_REPLICATION_MODE=slave
-      - REDIS_MASTER_HOST=redis
-      - ALLOW_EMPTY_PASSWORD=yes
-    ports:
-      - '6379'
-    depends_on:
-      - redis
+      - '8080:8080'
+      - '9008:9008'
+    links:
+      - postgres-database
     networks:
-      - app-tier
-  redis-sentinel:
-    image: 'bitnami/redis-sentinel:latest'
+      - campaigns-network
+  postgres-database:
+    container_name: postgres-campaigns-service
+    image: postgres:latest
     environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=5
-      - REDIS_SENTINEL_FAILOVER_TIMEOUT=5
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      PGDATA: /data/postgres
+    volumes:
+      - ./postgres-db:/data/postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '5432:5432'
+    networks:
+      - campaigns-network
 
-    depends_on:
-      - redis
-      - redis-slave
-    ports:
-      - '26379-26381:26379'
-    networks:
-      - app-tier
+volumes:
+  postgres-db:
+    driver: local

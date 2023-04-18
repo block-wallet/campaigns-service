@@ -3,8 +3,8 @@ package panic
 import (
 	"context"
 
-	"github.com/block-wallet/golang-service-template/utils/logger"
-	"github.com/block-wallet/golang-service-template/utils/monitoring/counter"
+	"github.com/block-wallet/campaigns-service/utils/logger"
+	"github.com/block-wallet/campaigns-service/utils/monitoring/counter"
 	gogrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

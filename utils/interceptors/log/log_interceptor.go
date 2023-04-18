@@ -4,9 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/block-wallet/golang-service-template/utils/logger"
+	"github.com/block-wallet/campaigns-service/utils/logger"
 	gogrpc "google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
@@ -21,26 +20,20 @@ func (i *Interceptor) UnaryInterceptor() gogrpc.UnaryServerInterceptor {
 		handler gogrpc.UnaryHandler) (response interface{}, err error) {
 		start := time.Now()
 		response, err = handler(ctx, req)
-		duration := time.Since(start)
-
-		statusCode := codes.OK.String()
 		if err != nil {
-			statusCode = status.Code(err).String()
-		}
+			if status.Code(err) >= 500 {
+				duration := time.Since(start)
+				statusCode := status.Code(err).String()
 
-		reqLogger := logger.Sugar.WithCtx(
-			ctx,
-			"method", info.FullMethod,
-			"duration", duration.String(),
-			"status_code", statusCode,
-		)
+				reqLogger := logger.Sugar.WithCtx(
+					ctx,
+					"method", info.FullMethod,
+					"duration", duration.String(),
+					"status_code", statusCode,
+				)
 
-		if err != nil {
-			reqLogger.Errorf("Incoming request: %v, Request Response: ERROR, Err: %v",
-				req, err)
-		} else {
-			reqLogger.Debugf("Incoming request: %v, Request Response: OK",
-				req)
+				reqLogger.Errorf("Incoming request: %v, Request Response: ERROR, Err: %s", req, err.Error())
+			}
 		}
 
 		return response, err

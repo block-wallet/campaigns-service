@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/block-wallet/golang-service-template/utils/errors"
+	"github.com/block-wallet/campaigns-service/utils/errors"
 )
 
 type Validator func(interface{}) bool

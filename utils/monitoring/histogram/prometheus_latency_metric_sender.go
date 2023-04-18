@@ -3,7 +3,7 @@ package histogram
 import (
 	"time"
 
-	"github.com/block-wallet/golang-service-template/utils/logger"
+	"github.com/block-wallet/campaigns-service/utils/logger"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )

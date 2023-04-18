@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/block-wallet/golang-service-template/cmd"
+	"github.com/block-wallet/campaigns-service/cmd"
 )
 
 var Version string

@@ -8,34 +8,19 @@ import (
 
 func TestNewDBConfig(t *testing.T) {
 	cases := []struct {
-		name             string
-		dbType           string
-		localCacheConfig *LocalCacheConfig
-		redisConfig      *RedisSentinelConfig
+		name      string
+		dbType    DBType
+		sqlConfig *SQLConfig
 	}{
 		{
 			"all empty",
 			"",
 			nil,
-			nil,
 		},
 		{
-			"db type local",
-			"local",
-			NewLocalCacheConfig(0, 0),
-			nil,
-		},
-		{
-			"db type redis sentinel",
-			"redis",
-			nil,
-			NewRedisSentinelConfig([]string{"host"}, "master", "password", 0, true, nil),
-		},
-		{
-			"db type redis sentinel with local",
-			"redis",
-			NewLocalCacheConfig(0, 0),
-			NewRedisSentinelConfig([]string{"host"}, "master", "password", 0, true, nil),
+			"db type SQLite",
+			PostgresDBType,
+			NewSQLConfig("test.db", false),
 		},
 	}
 
@@ -43,13 +28,12 @@ func TestNewDBConfig(t *testing.T) {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
 			// Operation
-			dbConfig := NewDBConfig(c.dbType, c.localCacheConfig, c.redisConfig)
+			dbConfig := NewDBConfig(c.dbType, c.sqlConfig)
 
 			// Validation
 			assert.NotNil(t, dbConfig)
 			assert.Equal(t, dbConfig.DBType, c.dbType)
-			assert.Equal(t, dbConfig.LocalCacheConfig, c.localCacheConfig)
-			assert.Equal(t, dbConfig.RedisSentinelConfig, c.redisConfig)
+			assert.Equal(t, dbConfig.SQLConfig, c.sqlConfig)
 		})
 	}
 }

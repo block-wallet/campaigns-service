@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/block-wallet/golang-service-template/utils/monitoring/histogram"
+	"github.com/block-wallet/campaigns-service/utils/monitoring/histogram"
 	gogrpc "google.golang.org/grpc"
 )
 

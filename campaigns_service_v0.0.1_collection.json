@@ -1,0 +1,291 @@
+{
+	"info": {
+		"_postman_id": "0a28cc8b-f82a-416d-82df-7d225c14c246",
+		"name": "Campaigns Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1093926"
+	},
+	"item": [
+		{
+			"name": "GetCampaigns",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/{{version}}/api/campaigns",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"{{version}}",
+						"api",
+						"campaigns"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetCampaignByID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/{{version}}/api/campaigns/170df129-bfc6-4a43-9a85-9a3d4470058c",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"{{version}}",
+						"api",
+						"campaigns",
+						"170df129-bfc6-4a43-9a85-9a3d4470058c"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetCampaignAccounts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/{{version}}/api/campaigns/3d9e5bdf-a1ed-4dff-9a6d-286b171122e7/accounts",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"{{version}}",
+						"api",
+						"campaigns",
+						"3d9e5bdf-a1ed-4dff-9a6d-286b171122e7",
+						"accounts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetCampaignEnrollMessage",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/{{version}}/api/campaigns/3d9e5bdf-a1ed-4dff-9a6d-286b171122e7/enroll-message",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"{{version}}",
+						"api",
+						"campaigns",
+						"3d9e5bdf-a1ed-4dff-9a6d-286b171122e7",
+						"enroll-message"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetTokens",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/{{version}}/api/tokens",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"{{version}}",
+						"api",
+						"tokens"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetTokensById",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/{{version}}/api/tokens/b6e77058-c6d9-485f-b48a-0ead0954979e",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"{{version}}",
+						"api",
+						"tokens",
+						"b6e77058-c6d9-485f-b48a-0ead0954979e"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CreateCampaign",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password123",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "blockwallet",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"campaign\": {\n        \"name\":\"Campaign 1\",\n        \"description\":\"This is the first campaign for a PostgreSQL db\",\n        \"is_active\":false,\n        \"start_date\":\"2023-05-01T00:00:00Z\",\n        \"end_date\":\"2023-06-01T00:00:00Z\",\n        \"rewards\":{\n            \"amounts\":[\"40000000\"],\n            \"type\":\"REWARD_TYPE_SINGLE\",\n            \"token\":{\n                \"create\": {\n                    \"name\":\"GoBlank\",\n                    \"symbol\":\"BLANK\",\n                    \"decimals\":18,\n                    \"contract_addresses\":{\n                        \"1\":\"0x41A3Dba3D677E573636BA691a70ff2D606c29666\",\n                        \"137\":\"0xf4C83080E80AE530d6f8180572cBbf1Ac9D5d435\"\n                    }\n                }\n            }\n        },\n        \"tags\":[\"BLANK\",\"staking1\"],\n        \"supported_chains\": [1,137]\n    }\n    \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/{{version}}/admin/campaigns",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"{{version}}",
+						"admin",
+						"campaigns"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateCampaing",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password123",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "blockwallet",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"stauts\": \"CAMPAIGN_STATUS_FINISHED\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/{{version}}/admin/campaigns/51237926-a332-4b55-a780-75606d198e2c",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"{{version}}",
+						"admin",
+						"campaigns",
+						"51237926-a332-4b55-a780-75606d198e2c"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EnrollInCampaign",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"account_address\":\"0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22\",\n    \"signature\":\"0xc7f3b054f0ed23f04d1214c3f35584c04994db5699da1f5e269b7304ee0efecc3bd219cb2e188ec4f353492418ea1fe4dc99efc3164fe44027dd7183405b93f01b\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/{{version}}/api/campaigns/7fefd5a3-c808-4353-b5a9-98686dfc7fb0/enroll",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"{{version}}",
+						"api",
+						"campaigns",
+						"7fefd5a3-c808-4353-b5a9-98686dfc7fb0",
+						"enroll"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "version",
+			"value": "v1",
+			"type": "string"
+		},
+		{
+			"key": "Public resource",
+			"value": "api",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "Admin resource",
+			"value": "admin",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}

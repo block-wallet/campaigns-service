@@ -21,8 +21,17 @@ vendor/
 artifacts/
 
 /bin/
-ethservice
+campaignsservice
+
 .vscode/
 
 **/.terraform*
 **/*tfstate*
+
+build/
+*.db
+queries.sql
+buf.gen.yaml
+buf.lock
+
+postgres-db

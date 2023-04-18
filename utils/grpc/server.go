@@ -9,11 +9,13 @@ import (
 	"strings"
 
 	"github.com/common-nighthawk/go-figure"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 const (
@@ -74,12 +76,18 @@ func (s *Server) registerEndpointHandlersFuncs(endpointsHandlersFuncs []Endpoint
 	ctx := context.Background()
 	mux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-			OrigName:     s.options.MarshalOptions.OrigName,
-			EmitDefaults: s.options.MarshalOptions.EmitDefaults,
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames:   s.options.MarshalOptions.OrigName,
+				EmitUnpopulated: true,
+			},
 		}),
 		runtime.WithIncomingHeaderMatcher(runtime.DefaultHeaderMatcher),
+		// runtime.WithOutgoingHeaderMatcher(runtime.DefaultHeaderMatcher),
+		runtime.WithOutgoingHeaderMatcher(func(key string) (string, bool) {
+			return "", false
+		}),
 	)
-	opts := []grpc.DialOption{grpc.WithInsecure()}
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	endpoint := fmt.Sprintf(":%d", s.options.Port)
 	for _, endpointsHandlersFunc := range endpointsHandlersFuncs {
 		if err := endpointsHandlersFunc(ctx, mux, endpoint, opts); err != nil {
@@ -91,23 +99,31 @@ func (s *Server) registerEndpointHandlersFuncs(endpointsHandlersFuncs []Endpoint
 
 func (s *Server) registerHttpHandlerFunc() {
 	handlersMux, err := s.registerEndpointHandlersFuncs(s.options.EndpointHandlersFuncs)
-	if err != nil || handlersMux == nil {
-		s.httpHandlerFunc = nil
+	if err != nil {
 		return
 	}
+
 	mux := http.NewServeMux()
-	mux.Handle("/", handlersMux)
+	if handlersMux != nil {
+		mux.Handle("/", handlersMux)
+	}
 
 	for _, endpoint := range s.options.HTTPEndpoints {
 		mux.Handle(endpoint.Path, endpoint.Handler)
 	}
 
-	s.httpHandlerFunc = func(w http.ResponseWriter, req *http.Request) {
-		if req.ProtoMajor == 2 && strings.Contains(req.Header.Get("Content-Type"), "application/grpc") {
-			s.grpcServer.ServeHTTP(w, req)
-			return
+	if handlersMux != nil {
+		s.httpHandlerFunc = func(w http.ResponseWriter, req *http.Request) {
+			if req.ProtoMajor == 2 && strings.Contains(req.Header.Get("Content-Type"), "application/grpc") {
+				s.grpcServer.ServeHTTP(w, req)
+				return
+			}
+			mux.ServeHTTP(w, req)
 		}
-		mux.ServeHTTP(w, req)
+	} else {
+		s.httpHandlerFunc = func(w http.ResponseWriter, req *http.Request) {
+			mux.ServeHTTP(w, req)
+		}
 	}
 }
 
@@ -153,10 +169,10 @@ func (s *Server) stopMetrics(ctx context.Context) {
 	if s.options.MetricsOptions == nil {
 		return
 	}
-	fmt.Printf("👋 Metrics server is shutting down...")
+	fmt.Printf("👋 Metrics server is shutting down...\n")
 	err := s.metricsServer.Shutdown(ctx)
 	if err != nil {
-		fmt.Printf("💀 Error while stopping metrics server at %d: '%s'", s.options.MetricsOptions.Port, err)
+		fmt.Printf("💀 Error while stopping metrics server at %d: '%s'\n", s.options.MetricsOptions.Port, err)
 	}
 }
 
@@ -164,33 +180,46 @@ func (s *Server) Start() error {
 	if s.IsRunning() {
 		return nil
 	}
+
 	address := fmt.Sprintf(":%d", s.options.Port)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		fmt.Printf("💀 Error while listening at port %d: '%s'", s.options.Port, err)
+		fmt.Printf("💀 Error while listening at port %d: '%s'\n", s.options.Port, err)
 		return err
 	}
+
 	s.isRunning = true
+
 	s.printBanner()
 	s.stopOnSignal()
 	s.startMetrics()
-	fmt.Printf("🌐 gRPC server is listening at port %d...", s.options.Port)
+
+	if s.options.Port > 0 {
+		fmt.Printf("🌐 gRPC server is listening at port %d...\n", s.options.Port)
+	}
+
 	if s.httpHandlerFunc == nil {
 		return s.grpcServer.Serve(listener)
 	}
-	s.gatewayServer = &http.Server{
-		Handler: h2c.NewHandler(s.httpHandlerFunc, &http2.Server{}),
-	}
-	return s.gatewayServer.Serve(listener)
 
+	s.gatewayServer = &http.Server{
+		Handler: h2c.NewHandler(allowCors(s.httpHandlerFunc), &http2.Server{}),
+	}
+
+	return s.gatewayServer.Serve(listener)
 }
 
 func (s *Server) stop(ctx context.Context) error {
 	if s.IsRunning() {
 		ctx, cancel := context.WithTimeout(ctx, s.options.StopTimeout)
 		defer cancel()
+
 		s.stopMetrics(ctx)
-		fmt.Printf("👋 gRPC server is shutting down...")
+
+		if s.options.Port > 0 {
+			fmt.Printf("👋 gRPC server is shutting down...\n")
+		}
+
 		if s.gatewayServer != nil {
 			s.isRunning = false
 			return s.gatewayServer.Shutdown(ctx)
@@ -200,6 +229,7 @@ func (s *Server) stop(ctx context.Context) error {
 			return nil
 		}
 	}
+
 	return nil
 }
 

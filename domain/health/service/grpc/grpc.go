@@ -3,22 +3,22 @@ package healthgrpcservice
 import (
 	"context"
 
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 
-	ethservicev1health "github.com/block-wallet/golang-service-template/protos/ethservicev1/src/health"
-	grpcServer "github.com/block-wallet/golang-service-template/utils/grpc"
+	campaignsservicev1health "github.com/block-wallet/campaigns-service/protos/src/campaignsservicev1/health"
+	grpcServer "github.com/block-wallet/campaigns-service/utils/grpc"
 )
 
 func GRPCService() grpcServer.Service {
 	return grpcServer.Service{
 		RegisterFn: func(server *grpc.Server, self interface{}) {
-			ethservicev1health.RegisterHealthServer(server, self.(ethservicev1health.HealthServer))
+			campaignsservicev1health.RegisterHealthServer(server, self.(campaignsservicev1health.HealthServer))
 		},
 		ServiceHandler: NewHandler(),
 	}
 }
 
 func HttpEndpointHandlerFunc(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
-	return ethservicev1health.RegisterHealthHandlerFromEndpoint(ctx, mux, endpoint, opts)
+	return campaignsservicev1health.RegisterHealthHandlerFromEndpoint(ctx, mux, endpoint, opts)
 }
