@@ -8,7 +8,7 @@ import (
 
 type Repository interface {
 	//Campaigns management
-	GetCampaigns(ctx context.Context, filters *model.GetCampaignsFilters) (*[]model.Campaign, error)
+	GetCampaigns(ctx context.Context, filters *model.GetCampaignsFilters) ([]*model.Campaign, error)
 	GetCampaignById(ctx context.Context, id string) (*model.Campaign, error)
 	NewCampaign(ctx context.Context, input *model.CreateCampaignInput) (*string, error)
 	EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (*bool, error)
@@ -17,7 +17,7 @@ type Repository interface {
 
 	//Token managemeent
 	GetTokenById(ctx context.Context, id string) (*model.MultichainToken, error)
-	GetAllTokens(ctx context.Context) (*[]model.MultichainToken, error)
+	GetAllTokens(ctx context.Context) ([]*model.MultichainToken, error)
 	TokenExists(ctx context.Context, id string) (*bool, error)
 	NewToken(ctx context.Context, token *model.MultichainToken) (*string, error)
 }

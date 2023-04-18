@@ -22,7 +22,7 @@ func NewSQLRepository(sqlDatabase *sql.DB) Repository {
 	}
 }
 
-func (r *SQLRepository) GetCampaigns(ctx context.Context, filters *model.GetCampaignsFilters) (*[]model.Campaign, error) {
+func (r *SQLRepository) GetCampaigns(ctx context.Context, filters *model.GetCampaignsFilters) ([]*model.Campaign, error) {
 	campaignsQueryBuilder := NewCampaignsQueryBuilder(filters)
 	q, p := campaignsQueryBuilder.Query(ctx)
 	rows, err := r.db.Query(q, p...)
@@ -31,14 +31,14 @@ func (r *SQLRepository) GetCampaigns(ctx context.Context, filters *model.GetCamp
 	}
 	defer rows.Close()
 
-	campaigns := make([]model.Campaign, 0)
+	campaigns := make([]*model.Campaign, 0)
 
 	for rows.Next() {
 		modelCampaign, err := campaignsQueryBuilder.Parse(ctx, rows)
 		if err != nil {
 			continue
 		}
-		campaigns = append(campaigns, *modelCampaign)
+		campaigns = append(campaigns, modelCampaign)
 	}
 
 	err = rows.Err()
@@ -46,7 +46,7 @@ func (r *SQLRepository) GetCampaigns(ctx context.Context, filters *model.GetCamp
 		return nil, err
 	}
 
-	return &campaigns, nil
+	return campaigns, nil
 }
 
 func (r *SQLRepository) GetCampaignById(ctx context.Context, id string) (*model.Campaign, error) {
@@ -321,14 +321,14 @@ func (r *SQLRepository) NewToken(ctx context.Context, token *model.MultichainTok
 	return &tokenId, nil
 }
 
-func (r *SQLRepository) GetAllTokens(ctx context.Context) (*[]model.MultichainToken, error) {
+func (r *SQLRepository) GetAllTokens(ctx context.Context) ([]*model.MultichainToken, error) {
 	rows, err := r.db.Query("SELECT t.id, t.name, t.symbol, t.decimals from tokens t;")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	tokens := make([]model.MultichainToken, 0)
+	tokens := make([]*model.MultichainToken, 0)
 
 	for rows.Next() {
 		tokenRow := tokenrow{}
@@ -340,7 +340,7 @@ func (r *SQLRepository) GetAllTokens(ctx context.Context) (*[]model.MultichainTo
 		if err != nil {
 			return nil, err
 		}
-		tokens = append(tokens, model.MultichainToken{
+		tokens = append(tokens, &model.MultichainToken{
 			Id:                tokenRow.id,
 			Name:              tokenRow.name,
 			Symbol:            tokenRow.symbol,
@@ -353,5 +353,5 @@ func (r *SQLRepository) GetAllTokens(ctx context.Context) (*[]model.MultichainTo
 	if err != nil {
 		return nil, err
 	}
-	return &tokens, nil
+	return tokens, nil
 }

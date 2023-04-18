@@ -69,18 +69,18 @@ func Test_GetCampaigns(t *testing.T) {
 	statusesActiveDefault := []model.CampaignStatus{model.STATUS_ACTIVE}
 	statusesCancelled := []model.CampaignStatus{model.STATUS_CANCELLED}
 
-	activeCampaigns := []model.Campaign{
-		activeCampaign,
+	activeCampaigns := []*model.Campaign{
+		&activeCampaign,
 	}
-	cancelledCampaigns := []model.Campaign{
-		cancelledCampaign,
+	cancelledCampaigns := []*model.Campaign{
+		&cancelledCampaign,
 	}
 	cases := []struct {
 		name                 string
 		input                *model.GetCampaignsFilters
 		repositoryInput      *model.GetCampaignsFilters
-		repositoryResponse   *[]model.Campaign
-		expected             *[]model.Campaign
+		repositoryResponse   []*model.Campaign
+		expected             []*model.Campaign
 		expectedRespotoryErr error
 		expectedServiceErr   errors.RichError
 	}{
@@ -88,15 +88,15 @@ func Test_GetCampaigns(t *testing.T) {
 			name:               "should fetch active campaings if filters.status is not provided",
 			input:              &model.GetCampaignsFilters{},
 			repositoryInput:    &model.GetCampaignsFilters{Status: &statusesActiveDefault},
-			expected:           &activeCampaigns,
-			repositoryResponse: &activeCampaigns,
+			expected:           activeCampaigns,
+			repositoryResponse: activeCampaigns,
 		},
 		{
 			name:               "should not add the active status filter if at least one filter.status is provided",
 			input:              &model.GetCampaignsFilters{Status: &statusesCancelled},
 			repositoryInput:    &model.GetCampaignsFilters{Status: &statusesCancelled},
-			expected:           &cancelledCampaigns,
-			repositoryResponse: &cancelledCampaigns,
+			expected:           cancelledCampaigns,
+			repositoryResponse: cancelledCampaigns,
 		},
 		{
 			name:                 "should return internal error if the repository fails",
@@ -709,14 +709,14 @@ func Test_GetAllTokens(t *testing.T) {
 		Symbol:   "SECTOK",
 		Decimals: 6,
 	}
-	allTokens := []model.MultichainToken{token, token2}
+	allTokens := []*model.MultichainToken{&token, &token2}
 	type repositoryMock struct {
-		getAllTokensRes *[]model.MultichainToken
+		getAllTokensRes []*model.MultichainToken
 		getAllTokensErr error
 	}
 	cases := []struct {
 		name               string
-		expectedServiceRes *[]model.MultichainToken
+		expectedServiceRes []*model.MultichainToken
 		expectedServiceErr errors.RichError
 		repository         repositoryMock
 	}{
@@ -729,9 +729,9 @@ func Test_GetAllTokens(t *testing.T) {
 		},
 		{
 			name:               "should return all the tokens",
-			expectedServiceRes: &allTokens,
+			expectedServiceRes: allTokens,
 			repository: repositoryMock{
-				getAllTokensRes: &allTokens,
+				getAllTokensRes: allTokens,
 			},
 		},
 	}

@@ -23,7 +23,7 @@ func NewServiceImpl(repository campaignsrepository.Repository) *ServiceImpl {
 	}
 }
 
-func (s *ServiceImpl) GetCampaigns(ctx context.Context, filters *model.GetCampaignsFilters) (*[]model.Campaign, errors.RichError) {
+func (s *ServiceImpl) GetCampaigns(ctx context.Context, filters *model.GetCampaignsFilters) ([]*model.Campaign, errors.RichError) {
 	if filters.Status == nil {
 		// get only Active campaings by default
 		filters.Status = &[]model.CampaignStatus{model.STATUS_ACTIVE}
@@ -200,7 +200,7 @@ func (s *ServiceImpl) GetTokenById(ctx context.Context, id string) (*model.Multi
 	return t, nil
 }
 
-func (s *ServiceImpl) GetAllTokens(ctx context.Context) (*[]model.MultichainToken, errors.RichError) {
+func (s *ServiceImpl) GetAllTokens(ctx context.Context) ([]*model.MultichainToken, errors.RichError) {
 	tokens, err := s.repository.GetAllTokens(ctx)
 	if err != nil {
 		logger.Sugar.WithCtx(ctx).Errorf("error retrieving tokens. Error: %v", err.Error())

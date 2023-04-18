@@ -46,10 +46,9 @@ func (h *Handler) GetCampaigns(ctx context.Context, req *campaignservicev1servic
 		return nil, err.ToGRPCError()
 	}
 
-	protoCampaigns := make([]*campaignservicev1service.Campaign, len(*modelCampaigns))
-	for i, modelCampaign := range *modelCampaigns {
-		protoCampaign := h.converter.ConvertFromModelCampaignToProtoCampaign(&modelCampaign)
-		protoCampaigns[i] = protoCampaign
+	protoCampaigns := make([]*campaignservicev1service.Campaign, len(modelCampaigns))
+	for i, modelCampaign := range modelCampaigns {
+		protoCampaigns[i] = h.converter.ConvertFromModelCampaignToProtoCampaign(modelCampaign)
 	}
 
 	return &campaignservicev1service.GetCampaignsReply{Campaigns: protoCampaigns}, nil
@@ -188,9 +187,9 @@ func (h *Handler) GetTokens(ctx context.Context, in *campaignservicev1service.Ge
 	if err != nil {
 		return nil, err.ToGRPCError()
 	}
-	protoTokens := make([]*campaignservicev1service.MultichainToken, 0, len(*modelTokens))
-	for _, t := range *modelTokens {
-		protoTokens = append(protoTokens, h.converter.ConvertFromModelMultichainTokenToProtoMultichainToken(&t))
+	protoTokens := make([]*campaignservicev1service.MultichainToken, len(modelTokens))
+	for i, t := range modelTokens {
+		protoTokens[i] = h.converter.ConvertFromModelMultichainTokenToProtoMultichainToken(t)
 	}
 	return &campaignservicev1service.GetTokensReply{
 		Tokens: protoTokens,
