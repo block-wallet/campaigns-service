@@ -41,19 +41,19 @@ func (_m *Repository) EnrollInCampaign(ctx context.Context, input *model.EnrollI
 }
 
 // GetAllTokens provides a mock function with given fields: ctx
-func (_m *Repository) GetAllTokens(ctx context.Context) (*[]model.MultichainToken, error) {
+func (_m *Repository) GetAllTokens(ctx context.Context) ([]*model.MultichainToken, error) {
 	ret := _m.Called(ctx)
 
-	var r0 *[]model.MultichainToken
+	var r0 []*model.MultichainToken
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*[]model.MultichainToken, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) ([]*model.MultichainToken, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *[]model.MultichainToken); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) []*model.MultichainToken); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*[]model.MultichainToken)
+			r0 = ret.Get(0).([]*model.MultichainToken)
 		}
 	}
 
@@ -93,19 +93,19 @@ func (_m *Repository) GetCampaignById(ctx context.Context, id string) (*model.Ca
 }
 
 // GetCampaigns provides a mock function with given fields: ctx, filters
-func (_m *Repository) GetCampaigns(ctx context.Context, filters *model.GetCampaignsFilters) (*[]model.Campaign, error) {
+func (_m *Repository) GetCampaigns(ctx context.Context, filters *model.GetCampaignsFilters) ([]*model.Campaign, error) {
 	ret := _m.Called(ctx, filters)
 
-	var r0 *[]model.Campaign
+	var r0 []*model.Campaign
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *model.GetCampaignsFilters) (*[]model.Campaign, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *model.GetCampaignsFilters) ([]*model.Campaign, error)); ok {
 		return rf(ctx, filters)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *model.GetCampaignsFilters) *[]model.Campaign); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *model.GetCampaignsFilters) []*model.Campaign); ok {
 		r0 = rf(ctx, filters)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*[]model.Campaign)
+			r0 = ret.Get(0).([]*model.Campaign)
 		}
 	}
 
