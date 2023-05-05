@@ -11,9 +11,11 @@ const CampaignTimeFormatLayout = time.RFC3339
 
 type CampaignStatus string
 type RewardType string
+type EnrollmentMode string
 
 const (
 	STATUS_PENDING   CampaignStatus = "PENDING"
+	STATUS_WAITLIST  CampaignStatus = "WAITLIST"
 	STATUS_ACTIVE    CampaignStatus = "ACTIVE"
 	STATUS_FINISHED  CampaignStatus = "FINISHED"
 	STATUS_CANCELLED CampaignStatus = "CANCELLED"
@@ -24,6 +26,11 @@ const (
 	SINGLE_REWARD  RewardType = "SINGLE_REWARD"
 	PODIUM_REWARD  RewardType = "PODIUM_REWARD"
 	DYNAMIC_REWARD RewardType = "DYNAMIC_REWARD"
+)
+
+const (
+	INSTANCE_UNLIMITED_ENROLL EnrollmentMode = "INSTANCE_UNLIMITED_ENROLL"
+	INSTANCE_SINGLE_ENROLL    EnrollmentMode = "INSTANCE_SINGLE_ENROLL"
 )
 
 type Campaign struct {
@@ -39,6 +46,7 @@ type Campaign struct {
 	Winners         []common.Address
 	Tags            []string
 	EnrollMessage   string
+	EnrollmentMode  EnrollmentMode
 }
 
 type MultichainToken struct {
@@ -85,6 +93,7 @@ type CreateCampaignInput struct {
 	Status          CampaignStatus
 	Rewards         CampaignRewardInput
 	EnrollMessage   string
+	EnrollmentMode  EnrollmentMode
 }
 
 type EnrollInCampaignInput struct {

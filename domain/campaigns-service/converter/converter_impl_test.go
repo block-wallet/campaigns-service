@@ -74,6 +74,7 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 						},
 					},
 				},
+				EnrollmentMode: model.INSTANCE_UNLIMITED_ENROLL,
 			},
 			expected: &campaignsservicev1.Campaign{
 				Id:              "123",
@@ -103,6 +104,7 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 						},
 					},
 				},
+				EnrollmentMode: campaignsservicev1.EnrollmentMode_INSTANCE_UNLIMITED_ENROLL,
 			},
 		},
 	}
@@ -227,6 +229,7 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 					Tags:            []string{"tag1"},
 					SupportedChains: []uint32{1, 137},
 					EnrollMessage:   "custom enroll message",
+					EnrollmentMode:  campaignsservicev1.EnrollmentMode_INSTANCE_SINGLE_ENROLL,
 				},
 			},
 			expected: &model.CreateCampaignInput{
@@ -238,6 +241,7 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 				Tags:            []string{"tag1"},
 				SupportedChains: []uint32{1, 137},
 				EnrollMessage:   "custom enroll message",
+				EnrollmentMode:  model.INSTANCE_SINGLE_ENROLL,
 				Rewards: model.CampaignRewardInput{
 					Amounts: []string{"1", "2", "3"},
 					Type:    model.PODIUM_REWARD,
@@ -266,6 +270,7 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 					Tags:            []string{"tag1"},
 					SupportedChains: []uint32{1, 137},
 					EnrollMessage:   "custom enroll message",
+					EnrollmentMode:  campaignsservicev1.EnrollmentMode_INSTANCE_UNLIMITED_ENROLL,
 				},
 			},
 			expected: &model.CreateCampaignInput{
@@ -277,6 +282,7 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 				Tags:            []string{"tag1"},
 				SupportedChains: []uint32{1, 137},
 				EnrollMessage:   "custom enroll message",
+				EnrollmentMode:  model.INSTANCE_UNLIMITED_ENROLL,
 				Rewards: model.CampaignRewardInput{
 					Amounts: []string{"1", "2", "3"},
 					Type:    model.PODIUM_REWARD,
@@ -304,6 +310,7 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 					},
 					Tags:            []string{"tag1"},
 					SupportedChains: []uint32{1, 137},
+					EnrollmentMode:  campaignsservicev1.EnrollmentMode_INSTANCE_UNLIMITED_ENROLL,
 				},
 			},
 			expected: &model.CreateCampaignInput{
@@ -314,6 +321,7 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 				Status:          model.STATUS_PENDING,
 				Tags:            []string{"tag1"},
 				SupportedChains: []uint32{1, 137},
+				EnrollmentMode:  model.INSTANCE_UNLIMITED_ENROLL,
 				EnrollMessage:   "Sign this message to enroll in campaign name",
 				Rewards: model.CampaignRewardInput{
 					Amounts: []string{"1", "2", "3"},
@@ -351,6 +359,7 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 					Tags:            []string{"tag1"},
 					SupportedChains: []uint32{1, 137},
 					EnrollMessage:   "custom enroll message",
+					EnrollmentMode:  campaignsservicev1.EnrollmentMode_INSTANCE_UNLIMITED_ENROLL,
 				},
 			},
 			expected: &model.CreateCampaignInput{
@@ -362,6 +371,7 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 				Tags:            []string{"tag1"},
 				SupportedChains: []uint32{1, 137},
 				EnrollMessage:   "custom enroll message",
+				EnrollmentMode:  model.INSTANCE_UNLIMITED_ENROLL,
 				Rewards: model.CampaignRewardInput{
 					Amounts: []string{"1", "2", "3"},
 					Type:    model.PODIUM_REWARD,

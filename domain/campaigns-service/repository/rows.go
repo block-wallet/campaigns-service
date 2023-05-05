@@ -7,6 +7,7 @@ type campaignrow struct {
 	status          string
 	startDate       string
 	endDate         string
+	enrollmentMode  string
 	tags            *string
 	supportedChains string
 	tokenId         *string

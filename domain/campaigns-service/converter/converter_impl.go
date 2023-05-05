@@ -34,6 +34,7 @@ func (c *ConverterImpl) ConvertFromModelCampaignToProtoCampaign(campaign *model.
 		Winners:         campaign_FromAddressesSliceToStringSlice(campaign.Winners),
 		Tags:            campaign.Tags,
 		EnrollMessage:   campaign.EnrollMessage,
+		EnrollmentMode:  campaign_FromModelEnrollmentModeToProtoEnrollmentMode(campaign.EnrollmentMode),
 	}
 
 	if campaign.Rewards != nil {
@@ -118,6 +119,7 @@ func (c *ConverterImpl) ConvertFromProtoCreateCampaignToModelCreateCampaign(inpu
 		Tags:            campaignInput.Tags,
 		SupportedChains: campaignInput.SupportedChains,
 		EnrollMessage:   enrollMessage,
+		EnrollmentMode:  campaign_FromProtoEnrollmentModeToModelEnrollmentMode(campaignInput.EnrollmentMode),
 	}
 
 	return &createCampaignRet, nil
@@ -200,6 +202,26 @@ func campaign_FromModelStatusToProtoStatus(modelStatus model.CampaignStatus) cam
 		return campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_ACTIVE
 	}
 	return campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_INVALID
+}
+
+func campaign_FromModelEnrollmentModeToProtoEnrollmentMode(modelEnrollmentMode model.EnrollmentMode) campaignservicev1service.EnrollmentMode {
+	switch modelEnrollmentMode {
+	case model.INSTANCE_SINGLE_ENROLL:
+		return campaignservicev1service.EnrollmentMode_INSTANCE_SINGLE_ENROLL
+	case model.INSTANCE_UNLIMITED_ENROLL:
+		return campaignservicev1service.EnrollmentMode_INSTANCE_UNLIMITED_ENROLL
+	}
+	return campaignservicev1service.EnrollmentMode_ENROLLMENT_MODE_INVALID
+}
+
+func campaign_FromProtoEnrollmentModeToModelEnrollmentMode(protoEnrollmentMode campaignservicev1service.EnrollmentMode) model.EnrollmentMode {
+	switch protoEnrollmentMode {
+	case campaignservicev1service.EnrollmentMode_INSTANCE_SINGLE_ENROLL:
+		return model.INSTANCE_SINGLE_ENROLL
+	case campaignservicev1service.EnrollmentMode_INSTANCE_UNLIMITED_ENROLL:
+		return model.INSTANCE_UNLIMITED_ENROLL
+	}
+	return model.INSTANCE_SINGLE_ENROLL
 }
 
 func rewards_fromModelTypeToProtoType(rewardType model.RewardType) campaignservicev1service.RewardType {
