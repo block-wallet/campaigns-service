@@ -91,6 +91,7 @@ message CreateCampaignMsg {
     repeated string tags = 7;
     repeated uint32 supported_chains = 8;
     string enroll_message = 9;
+    EnrollmentMode enrollment_mode = 10;
   }
   CreateCampaignInput campaign = 1;
 }
@@ -137,6 +138,7 @@ message Campaign {
   repeated string winners = 10;
   repeated string tags = 11;
   string enroll_message = 12;
+  EnrollmentMode enrollment_mode = 13;
 }
 
 // The rewards for the campaigns winners
@@ -171,6 +173,12 @@ enum CampaignStatus {
   CAMPAIGN_STATUS_ACTIVE = 2;
   CAMPAIGN_STATUS_FINISHED = 3;
   CAMPAIGN_STATUS_CANCELLED = 4;
+}
+
+enum EnrollmentMode {
+  ENROLLMENT_MODE_INVALID = 0;
+  INSTANCE_UNLIMITED_ENROLL = 1;
+  INSTANCE_SINGLE_ENROLL = 2;
 }
 
 enum RewardType {
