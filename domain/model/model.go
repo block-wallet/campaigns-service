@@ -15,7 +15,6 @@ type EnrollmentMode string
 
 const (
 	STATUS_PENDING   CampaignStatus = "PENDING"
-	STATUS_WAITLIST  CampaignStatus = "WAITLIST"
 	STATUS_ACTIVE    CampaignStatus = "ACTIVE"
 	STATUS_FINISHED  CampaignStatus = "FINISHED"
 	STATUS_CANCELLED CampaignStatus = "CANCELLED"
