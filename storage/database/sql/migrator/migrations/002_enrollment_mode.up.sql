@@ -1,0 +1,1 @@
+ALTER TABLE campaigns add column enrollment_mode text not null default 'INSTANCE_SINGLE_ENROLL';
