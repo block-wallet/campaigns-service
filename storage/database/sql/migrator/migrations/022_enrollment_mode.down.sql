@@ -1,0 +1,1 @@
+ALTER TABLE campaigns drop column enrollment_mode;

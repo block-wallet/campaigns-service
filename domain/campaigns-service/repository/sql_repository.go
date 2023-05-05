@@ -87,7 +87,7 @@ func (r *SQLRepository) NewCampaign(ctx context.Context, input *model.CreateCamp
 	}
 	campaignId := uuid.NewString()
 
-	_, err = tx.ExecContext(ctx, "INSERT INTO campaigns (id,name,description,status,start_date,end_date,enroll_message) VALUES ($1,$2,$3,$4,$5,$6,$7)", campaignId, input.Name, input.Description, input.Status, input.StartDate, input.EndDate, input.EnrollMessage)
+	_, err = tx.ExecContext(ctx, "INSERT INTO campaigns (id,name,description,status,start_date,end_date,enroll_message,enrollment_mode) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)", campaignId, input.Name, input.Description, input.Status, input.StartDate, input.EndDate, input.EnrollMessage, input.EnrollmentMode)
 	if err != nil {
 		return nil, err
 	}

@@ -33,7 +33,7 @@ func NewCampaignsQueryBuilder(filters *model.GetCampaignsFilters) *CampaignsQuer
 }
 
 func (r *CampaignsQueryBuilder) Query(ctx context.Context) (string, []any) {
-	campaignSelectFields := "c.id, c.name, c.description, c.status, c.start_date, c.end_date, c.enroll_message"
+	campaignSelectFields := "c.id, c.name, c.description, c.status, c.start_date, c.end_date, c.enroll_message, c.enrollment_mode"
 	tagsSelectFields := "string_agg(distinct ct.tag, ',') as tags"
 	supportedChainFields := "string_agg(distinct csc.chain_id, ',') as supported_chains"
 	tokenSelectFields := "t.id as token_id, t.name as token_name, t.symbol as token_symbol, t.decimals as token_decimals"
@@ -127,7 +127,7 @@ func (r *CampaignsQueryBuilder) withFilters(ctx context.Context, query string) s
 func (r *CampaignsQueryBuilder) Parse(ctx context.Context, rows *sql.Rows) (*model.Campaign, error) {
 	var parsedRow campaignrow
 	err := rows.Scan(&parsedRow.id, &parsedRow.name, &parsedRow.description, &parsedRow.status,
-		&parsedRow.startDate, &parsedRow.endDate, &parsedRow.enrollMessage, &parsedRow.tags, &parsedRow.supportedChains, &parsedRow.tokenId,
+		&parsedRow.startDate, &parsedRow.endDate, &parsedRow.enrollMessage, &parsedRow.enrollmentMode, &parsedRow.tags, &parsedRow.supportedChains, &parsedRow.tokenId,
 		&parsedRow.tokenName, &parsedRow.tokenSymbol, &parsedRow.decimals, &parsedRow.rewardId, &parsedRow.amounts, &parsedRow.rewardType, &parsedRow.participants,
 		&parsedRow.winners)
 	if err != nil {
@@ -153,13 +153,14 @@ func (r *CampaignsQueryBuilder) rowToCampaign(row campaignrow) (*model.Campaign,
 		return nil, err
 	}
 	campaign := model.Campaign{
-		Id:            row.id,
-		Name:          row.name,
-		Description:   row.description,
-		Status:        model.CampaignStatus(row.status),
-		StartDate:     startDate,
-		EndDate:       endDate,
-		EnrollMessage: *row.enrollMessage,
+		Id:             row.id,
+		Name:           row.name,
+		Description:    row.description,
+		Status:         model.CampaignStatus(row.status),
+		StartDate:      startDate,
+		EndDate:        endDate,
+		EnrollMessage:  *row.enrollMessage,
+		EnrollmentMode: model.EnrollmentMode(row.enrollmentMode),
 	}
 
 	if row.supportedChains != "" {
