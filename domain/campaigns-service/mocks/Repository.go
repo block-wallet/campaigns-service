@@ -15,20 +15,18 @@ type Repository struct {
 }
 
 // EnrollInCampaign provides a mock function with given fields: ctx, input
-func (_m *Repository) EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (*bool, error) {
+func (_m *Repository) EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (bool, error) {
 	ret := _m.Called(ctx, input)
 
-	var r0 *bool
+	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *model.EnrollInCampaignInput) (*bool, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *model.EnrollInCampaignInput) (bool, error)); ok {
 		return rf(ctx, input)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *model.EnrollInCampaignInput) *bool); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *model.EnrollInCampaignInput) bool); ok {
 		r0 = rf(ctx, input)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*bool)
-		}
+		r0 = ret.Get(0).(bool)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *model.EnrollInCampaignInput) error); ok {
@@ -197,20 +195,18 @@ func (_m *Repository) NewToken(ctx context.Context, token *model.MultichainToken
 }
 
 // ParticipantExists provides a mock function with given fields: ctx, campaignId, accountAddress
-func (_m *Repository) ParticipantExists(ctx context.Context, campaignId string, accountAddress string) (*bool, error) {
+func (_m *Repository) ParticipantExists(ctx context.Context, campaignId string, accountAddress string) (bool, error) {
 	ret := _m.Called(ctx, campaignId, accountAddress)
 
-	var r0 *bool
+	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*bool, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (bool, error)); ok {
 		return rf(ctx, campaignId, accountAddress)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) *bool); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) bool); ok {
 		r0 = rf(ctx, campaignId, accountAddress)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*bool)
-		}
+		r0 = ret.Get(0).(bool)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
@@ -241,6 +237,30 @@ func (_m *Repository) TokenExists(ctx context.Context, id string) (*bool, error)
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UnenrollFromCampaign provides a mock function with given fields: ctx, input
+func (_m *Repository) UnenrollFromCampaign(ctx context.Context, input *model.UnenrollFromCampaignInput) (bool, error) {
+	ret := _m.Called(ctx, input)
+
+	var r0 bool
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *model.UnenrollFromCampaignInput) (bool, error)); ok {
+		return rf(ctx, input)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *model.UnenrollFromCampaignInput) bool); ok {
+		r0 = rf(ctx, input)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *model.UnenrollFromCampaignInput) error); ok {
+		r1 = rf(ctx, input)
 	} else {
 		r1 = ret.Error(1)
 	}
