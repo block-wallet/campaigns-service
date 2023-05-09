@@ -55,7 +55,9 @@ require (
 require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/hasura/go-graphql-client v0.9.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/lib/pq v1.10.7 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
@@ -65,4 +67,5 @@ require (
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
+	nhooyr.io/websocket v1.8.7 // indirect
 )
