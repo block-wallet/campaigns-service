@@ -75,6 +75,12 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 					},
 				},
 				EnrollmentMode: model.INSTANCE_UNLIMITED_ENROLL,
+				Type:           model.CAMPAIGN_TYPE_GALXE,
+				Metadata: model.CampaignMetadata{
+					GalxeMetadata: &model.GalxeCampaignMetadata{
+						CredentialId: "123456",
+					},
+				},
 			},
 			expected: &campaignsservicev1.Campaign{
 				Id:              "123",
@@ -88,6 +94,12 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 				Tags:            []string{"tag1", "tag2"},
 				EnrollMessage:   "Custom enroll message",
 				Winners:         []string{},
+				CampaignType:    campaignsservicev1.CampaignType_CAMPAIGN_TYPE_GALXE,
+				CampaignMetadata: &campaignsservicev1.Campaign_GalxeMetadata{
+					GalxeMetadata: &campaignsservicev1.GalxeCampaignMetadata{
+						CredentialId: "123456",
+					},
+				},
 				Rewards: &campaignsservicev1.Rewards{
 					Type: campaignsservicev1.RewardType_REWARD_TYPE_PODIUM,
 					Amounts: []string{
@@ -230,6 +242,12 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 					SupportedChains: []uint32{1, 137},
 					EnrollMessage:   "custom enroll message",
 					EnrollmentMode:  campaignsservicev1.EnrollmentMode_INSTANCE_SINGLE_ENROLL,
+					CampaignType:    campaignsservicev1.CampaignType_CAMPAIGN_TYPE_GALXE,
+					Metadata: &campaignsservicev1.CreateCampaignMsg_CreateCampaignInput_GalxeMetadata{
+						GalxeMetadata: &campaignsservicev1.GalxeCampaignMetadata{
+							CredentialId: "123456",
+						},
+					},
 				},
 			},
 			expected: &model.CreateCampaignInput{
@@ -242,6 +260,12 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 				SupportedChains: []uint32{1, 137},
 				EnrollMessage:   "custom enroll message",
 				EnrollmentMode:  model.INSTANCE_SINGLE_ENROLL,
+				Type:            model.CAMPAIGN_TYPE_GALXE,
+				Metadata: model.CampaignMetadata{
+					GalxeMetadata: &model.GalxeCampaignMetadata{
+						CredentialId: "123456",
+					},
+				},
 				Rewards: model.CampaignRewardInput{
 					Amounts: []string{"1", "2", "3"},
 					Type:    model.PODIUM_REWARD,
@@ -271,6 +295,10 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 					SupportedChains: []uint32{1, 137},
 					EnrollMessage:   "custom enroll message",
 					EnrollmentMode:  campaignsservicev1.EnrollmentMode_INSTANCE_UNLIMITED_ENROLL,
+					CampaignType:    campaignsservicev1.CampaignType_CAMPAIGN_TYPE_PARTNER_OFFERS,
+					Metadata: &campaignsservicev1.CreateCampaignMsg_CreateCampaignInput_PartnerOffersMetadata{
+						PartnerOffersMetadata: &campaignsservicev1.PartnerOffersCampaignMetadata{},
+					},
 				},
 			},
 			expected: &model.CreateCampaignInput{
@@ -289,6 +317,10 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 					Token: model.CampaignRewardTokenInput{
 						Id: &tokenId,
 					},
+				},
+				Type: model.CAMPAIGN_TYPE_PARTNER_OFFERS,
+				Metadata: model.CampaignMetadata{
+					PartnerOffersMetadata: &model.PartnerOffersMetadata{},
 				},
 			},
 		},
@@ -311,6 +343,10 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 					Tags:            []string{"tag1"},
 					SupportedChains: []uint32{1, 137},
 					EnrollmentMode:  campaignsservicev1.EnrollmentMode_INSTANCE_UNLIMITED_ENROLL,
+					CampaignType:    campaignsservicev1.CampaignType_CAMPAIGN_TYPE_PARTNER_OFFERS,
+					Metadata: &campaignsservicev1.CreateCampaignMsg_CreateCampaignInput_PartnerOffersMetadata{
+						PartnerOffersMetadata: &campaignsservicev1.PartnerOffersCampaignMetadata{},
+					},
 				},
 			},
 			expected: &model.CreateCampaignInput{
@@ -329,6 +365,10 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 					Token: model.CampaignRewardTokenInput{
 						Id: &tokenId,
 					},
+				},
+				Type: model.CAMPAIGN_TYPE_PARTNER_OFFERS,
+				Metadata: model.CampaignMetadata{
+					PartnerOffersMetadata: &model.PartnerOffersMetadata{},
 				},
 			},
 		},
@@ -360,6 +400,10 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 					SupportedChains: []uint32{1, 137},
 					EnrollMessage:   "custom enroll message",
 					EnrollmentMode:  campaignsservicev1.EnrollmentMode_INSTANCE_UNLIMITED_ENROLL,
+					CampaignType:    campaignsservicev1.CampaignType_CAMPAIGN_TYPE_PARTNER_OFFERS,
+					Metadata: &campaignsservicev1.CreateCampaignMsg_CreateCampaignInput_PartnerOffersMetadata{
+						PartnerOffersMetadata: &campaignsservicev1.PartnerOffersCampaignMetadata{},
+					},
 				},
 			},
 			expected: &model.CreateCampaignInput{
@@ -386,6 +430,10 @@ func Test_ConvertFromProtoCreateCampaignToModelCreateCampaign(t *testing.T) {
 							},
 						},
 					},
+				},
+				Type: model.CAMPAIGN_TYPE_PARTNER_OFFERS,
+				Metadata: model.CampaignMetadata{
+					PartnerOffersMetadata: &model.PartnerOffersMetadata{},
 				},
 			},
 		},

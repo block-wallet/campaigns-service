@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/block-wallet/campaigns-service/domain/campaigns-service/client"
 	campaignsservicemocks "github.com/block-wallet/campaigns-service/domain/campaigns-service/mocks"
 	"github.com/block-wallet/campaigns-service/domain/model"
 	"github.com/block-wallet/campaigns-service/utils/errors"
@@ -40,8 +41,13 @@ func getActiveCampaign() model.Campaign {
 			common.HexToAddress(participans[1]),
 			common.HexToAddress(participans[2]),
 		},
-		Tags:          []string{"tag1", "tag2"},
-		EnrollMessage: "Custom enroll message",
+		Tags:           []string{"tag1", "tag2"},
+		EnrollMessage:  "Custom enroll message",
+		EnrollmentMode: model.INSTANCE_SINGLE_ENROLL,
+		Type:           model.CAMPAIGN_TYPE_PARTNER_OFFERS,
+		Metadata: model.CampaignMetadata{
+			PartnerOffersMetadata: &model.PartnerOffersMetadata{},
+		},
 		Rewards: &model.Reward{
 			Type: model.PODIUM_REWARD,
 			Amounts: []*big.Int{
@@ -112,7 +118,8 @@ func Test_GetCampaigns(t *testing.T) {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
 			repository := new(campaignsservicemocks.Repository)
-			service := NewServiceImpl(repository)
+			galxeClient := new(campaignsservicemocks.GalxeClient)
+			service := NewServiceImpl(repository, galxeClient)
 			repository.On("GetCampaigns", mock.Anything, c.repositoryInput).Return(c.repositoryResponse, c.expectedRespotoryErr)
 			result, err := service.GetCampaigns(context.Background(), c.input)
 			if err != nil {
@@ -164,7 +171,8 @@ func Test_GetCampaignById(t *testing.T) {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
 			repository := new(campaignsservicemocks.Repository)
-			service := NewServiceImpl(repository)
+			galxeClient := new(campaignsservicemocks.GalxeClient)
+			service := NewServiceImpl(repository, galxeClient)
 			repository.On("GetCampaignById", mock.Anything, c.id).Return(c.repositoryResponse, c.expectedRespotoryErr)
 			result, err := service.GetCampaignById(context.Background(), c.id)
 			if err != nil {
@@ -180,18 +188,33 @@ func Test_GetCampaignById(t *testing.T) {
 }
 
 func Test_EnrollInCampaignTest(t *testing.T) {
+	galxeCredential := "galxe-credential-123"
 	activeCampaign := getActiveCampaign()
+	activeGalxeCampaign := getActiveCampaign()
+	activeGalxeCampaign.Type = model.CAMPAIGN_TYPE_GALXE
+	activeGalxeCampaign.Metadata = model.CampaignMetadata{
+		GalxeMetadata: &model.GalxeCampaignMetadata{
+			CredentialId: galxeCredential,
+		},
+	}
+
 	cancelledCampaign := getActiveCampaign()
 	cancelledCampaign.Status = model.STATUS_CANCELLED
-	trueBool := true
-	falseBool := false
 	type repositoryMock struct {
 		getByIdExpectedResponse    *model.Campaign
 		getByIdExpectedErr         error
-		enrollExpectedResponse     *bool
+		enrollExpectedResponse     bool
 		enrollExpectedErr          error
-		participantsExistsResponse *bool
+		participantsExistsResponse bool
 		participantsExistsErr      error
+		shouldCallUnenroll         bool
+		unenrollExpectedResponse   bool
+		unenrollExpectedErr        error
+	}
+	type galxeMock struct {
+		populateParticipantExpectedInput     client.PopulateParticipantsInput
+		populateParticipantsExpectedResponse bool
+		populateParticipantsExpectedErr      error
 	}
 	cases := []struct {
 		name               string
@@ -200,6 +223,7 @@ func Test_EnrollInCampaignTest(t *testing.T) {
 		repository         repositoryMock
 		id                 string
 		accountAddress     string
+		galxeMock          *galxeMock
 	}{
 		{
 			name:               "should return internal error if the database fails getting campaign by id",
@@ -248,7 +272,7 @@ func Test_EnrollInCampaignTest(t *testing.T) {
 			accountAddress:     "0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22",
 			repository: repositoryMock{
 				getByIdExpectedResponse:    &activeCampaign,
-				participantsExistsResponse: &trueBool,
+				participantsExistsResponse: true,
 			},
 		},
 		{
@@ -258,7 +282,7 @@ func Test_EnrollInCampaignTest(t *testing.T) {
 			accountAddress:     "0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22",
 			repository: repositoryMock{
 				getByIdExpectedResponse:    &activeCampaign,
-				participantsExistsResponse: &falseBool,
+				participantsExistsResponse: false,
 				enrollExpectedErr:          fmt.Errorf("error"),
 			},
 		},
@@ -269,8 +293,50 @@ func Test_EnrollInCampaignTest(t *testing.T) {
 			accountAddress:     "0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22",
 			repository: repositoryMock{
 				getByIdExpectedResponse:    &activeCampaign,
-				participantsExistsResponse: &falseBool,
-				enrollExpectedResponse:     &trueBool,
+				participantsExistsResponse: false,
+				enrollExpectedResponse:     true,
+			},
+		},
+		{
+			name:               "should unenroll the account if galxe participant population fails",
+			expectedServiceRes: false,
+			expectedServiceErr: errors.NewInternal("failed"),
+			id:                 "101112",
+			accountAddress:     "0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22",
+			repository: repositoryMock{
+				getByIdExpectedResponse:    &activeGalxeCampaign,
+				participantsExistsResponse: false,
+				enrollExpectedResponse:     true,
+				shouldCallUnenroll:         true,
+				unenrollExpectedResponse:   true,
+				unenrollExpectedErr:        nil,
+			},
+			galxeMock: &galxeMock{
+				populateParticipantExpectedInput: client.PopulateParticipantsInput{
+					Address:      common.HexToAddress("0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22"),
+					CredentialId: activeGalxeCampaign.Metadata.GalxeMetadata.CredentialId,
+				},
+				populateParticipantsExpectedResponse: false,
+				populateParticipantsExpectedErr:      fmt.Errorf("galxe population err"),
+			},
+		},
+		{
+			name:               "should return ok if enroll and galxe population works",
+			expectedServiceRes: true,
+			id:                 "101112",
+			accountAddress:     "0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22",
+			repository: repositoryMock{
+				getByIdExpectedResponse:    &activeGalxeCampaign,
+				participantsExistsResponse: false,
+				enrollExpectedResponse:     true,
+				shouldCallUnenroll:         false,
+			},
+			galxeMock: &galxeMock{
+				populateParticipantExpectedInput: client.PopulateParticipantsInput{
+					Address:      common.HexToAddress("0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22"),
+					CredentialId: activeGalxeCampaign.Metadata.GalxeMetadata.CredentialId,
+				},
+				populateParticipantsExpectedResponse: true,
 			},
 		},
 	}
@@ -278,7 +344,8 @@ func Test_EnrollInCampaignTest(t *testing.T) {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
 			repository := new(campaignsservicemocks.Repository)
-			service := NewServiceImpl(repository)
+			galxeClient := new(campaignsservicemocks.GalxeClient)
+			service := NewServiceImpl(repository, galxeClient)
 			input := &model.EnrollInCampaignInput{
 				Adddress:   common.HexToAddress(c.accountAddress),
 				CampaignId: c.id,
@@ -286,6 +353,14 @@ func Test_EnrollInCampaignTest(t *testing.T) {
 			repository.On("GetCampaignById", mock.Anything, c.id).Return(c.repository.getByIdExpectedResponse, c.repository.getByIdExpectedErr)
 			repository.On("ParticipantExists", mock.Anything, c.id, input.Adddress.String()).Return(c.repository.participantsExistsResponse, c.repository.participantsExistsErr)
 			repository.On("EnrollInCampaign", mock.Anything, input).Return(c.repository.enrollExpectedResponse, c.repository.enrollExpectedErr)
+			repository.On("UnenrollFromCampaign", mock.Anything, &model.UnenrollFromCampaignInput{
+				Adddress:   common.HexToAddress(c.accountAddress),
+				CampaignId: c.id,
+			}).Return(c.repository.unenrollExpectedResponse, c.repository.unenrollExpectedErr)
+
+			if c.galxeMock != nil {
+				galxeClient.On("PopulateParticipant", mock.Anything, c.galxeMock.populateParticipantExpectedInput).Return(c.galxeMock.populateParticipantsExpectedResponse, c.repository.getByIdExpectedErr)
+			}
 
 			result, err := service.EnrollInCampaign(context.Background(), input)
 			if err != nil {
@@ -294,7 +369,12 @@ func Test_EnrollInCampaignTest(t *testing.T) {
 				expectedServErrorCode := status.Code(c.expectedServiceErr.ToGRPCError())
 				assert.Equal(t, expectedServErrorCode, serviceErrCode)
 			} else {
-				assert.EqualValues(t, c.expectedServiceRes, *result)
+				assert.EqualValues(t, c.expectedServiceRes, result)
+				unenrollTimes := 0
+				if c.repository.shouldCallUnenroll {
+					unenrollTimes = 1
+				}
+				repository.AssertNumberOfCalls(t, "UnenrollFromCampaign", unenrollTimes)
 			}
 		})
 	}
@@ -436,8 +516,8 @@ func Test_CreateCampaign(t *testing.T) {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
 			repository := new(campaignsservicemocks.Repository)
-			service := NewServiceImpl(repository)
-
+			galxeClient := new(campaignsservicemocks.GalxeClient)
+			service := NewServiceImpl(repository, galxeClient)
 			if c.input.Rewards.Token.Id != nil {
 				repository.On("TokenExists", mock.Anything, *c.input.Rewards.Token.Id).Return(c.repository.tokenExistsRes, c.repository.tokenExistsErr)
 			}
@@ -618,7 +698,8 @@ func Test_UpdateCampaign(t *testing.T) {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
 			repository := new(campaignsservicemocks.Repository)
-			service := NewServiceImpl(repository)
+			galxeClient := new(campaignsservicemocks.GalxeClient)
+			service := NewServiceImpl(repository, galxeClient)
 			repository.On("GetCampaignById", mock.Anything, c.input.Id).Return(c.repository.getCampaignByIdRes, c.repository.getCampaignByIdErr)
 			repository.On("UpdateCampaign", mock.Anything, c.input).Return(c.repository.updateCampaignRes, c.repository.updateCampaignErr)
 
@@ -681,7 +762,8 @@ func Test_GetTokenById(t *testing.T) {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
 			repository := new(campaignsservicemocks.Repository)
-			service := NewServiceImpl(repository)
+			galxeClient := new(campaignsservicemocks.GalxeClient)
+			service := NewServiceImpl(repository, galxeClient)
 			repository.On("GetTokenById", mock.Anything, c.id).Return(c.repository.getTokenByIdRes, c.repository.getTokenByIdErr)
 			result, err := service.GetTokenById(context.Background(), c.id)
 			if err != nil {
@@ -739,7 +821,8 @@ func Test_GetAllTokens(t *testing.T) {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
 			repository := new(campaignsservicemocks.Repository)
-			service := NewServiceImpl(repository)
+			galxeClient := new(campaignsservicemocks.GalxeClient)
+			service := NewServiceImpl(repository, galxeClient)
 			repository.On("GetAllTokens", mock.Anything).Return(c.repository.getAllTokensRes, c.repository.getAllTokensErr)
 			result, err := service.GetAllTokens(context.Background())
 			if err != nil {
