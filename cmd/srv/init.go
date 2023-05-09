@@ -12,26 +12,30 @@ import (
 )
 
 const (
-	defaultLogLevel            = "debug"
-	defaultPort                = 8080
-	defaultMetricsPort         = 9008
-	defaultDbType              = config.PostgresDBType
-	defaultSQLConnectionString = "postgresql://localhost:5432/postgres?user=postgres&password=admin&sslmode=disable"
-	defaultAdminUsername       = "blockwallet"
-	defaultAdminPassword       = "password123"
-	defaultSkipMigrations      = false
+	defaultLogLevel             = "debug"
+	defaultPort                 = 8080
+	defaultMetricsPort          = 9008
+	defaultDbType               = config.PostgresDBType
+	defaultSQLConnectionString  = "postgresql://localhost:5432/postgres?user=postgres&password=admin&sslmode=disable"
+	defaultAdminUsername        = "blockwallet"
+	defaultAdminPassword        = "password123"
+	defaultSkipMigrations       = false
+	defaultGalxeGraphQLEndpoint = "https://graphigo.prd.galaxy.eco/query"
+	defaultGalxeAccessToken     = ""
 )
 
 // Args for this cmd
 var (
-	logLevelArg         string
-	port                int
-	metricsPort         int
-	dbType              config.DBType
-	sqlConnectionString string
-	adminUsername       string
-	adminPassword       string
-	skipMigrations      bool
+	logLevelArg          string
+	port                 int
+	metricsPort          int
+	dbType               config.DBType
+	sqlConnectionString  string
+	adminUsername        string
+	adminPassword        string
+	skipMigrations       bool
+	galxeGraphQLEndpoint string
+	galxeAccessToken     string
 )
 
 var cmd = &cobra.Command{
@@ -51,6 +55,8 @@ func init() {
 	adminUsername = val.GetEnvValWithDefault("ADMIN_USERNAME", defaultAdminUsername)
 	adminPassword = val.GetEnvValWithDefault("ADMIN_PASSWORD", defaultAdminPassword)
 	skipMigrations = val.GetBoolEnvValWithDefault("SKIP_MIGRATIONS", defaultSkipMigrations)
+	galxeGraphQLEndpoint = val.GetEnvValWithDefault("GALXE_GRAPHQL_ENDPOINT", defaultGalxeGraphQLEndpoint)
+	galxeAccessToken = val.GetEnvValWithDefault("GALXE_ACCESS_TOKEN", defaultGalxeAccessToken)
 }
 
 func parseDBType(dbType string) config.DBType {

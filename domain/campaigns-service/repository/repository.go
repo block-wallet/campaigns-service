@@ -11,8 +11,9 @@ type Repository interface {
 	GetCampaigns(ctx context.Context, filters *model.GetCampaignsFilters) ([]*model.Campaign, error)
 	GetCampaignById(ctx context.Context, id string) (*model.Campaign, error)
 	NewCampaign(ctx context.Context, input *model.CreateCampaignInput) (*string, error)
-	EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (*bool, error)
-	ParticipantExists(ctx context.Context, campaignId string, accountAddress string) (*bool, error)
+	EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (bool, error)
+	UnenrollFromCampaign(ctx context.Context, input *model.UnenrollFromCampaignInput) (bool, error)
+	ParticipantExists(ctx context.Context, campaignId string, accountAddress string) (bool, error)
 	UpdateCampaign(ctx context.Context, updates *model.UpdateCampaignInput) (*bool, error)
 
 	//Token managemeent

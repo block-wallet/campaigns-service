@@ -12,6 +12,7 @@ const CampaignTimeFormatLayout = time.RFC3339
 type CampaignStatus string
 type RewardType string
 type EnrollmentMode string
+type CampaignType string
 
 const (
 	STATUS_PENDING   CampaignStatus = "PENDING"
@@ -33,6 +34,11 @@ const (
 	INSTANCE_SINGLE_ENROLL    EnrollmentMode = "INSTANCE_SINGLE_ENROLL"
 )
 
+const (
+	CAMPAIGN_TYPE_PARTNER_OFFERS CampaignType = "PARTNER_OFFERS"
+	CAMPAIGN_TYPE_GALXE          CampaignType = "GALXE"
+)
+
 type Campaign struct {
 	Id              string //uid
 	SupportedChains []uint32
@@ -47,6 +53,8 @@ type Campaign struct {
 	Tags            []string
 	EnrollMessage   string
 	EnrollmentMode  EnrollmentMode
+	Type            CampaignType
+	Metadata        CampaignMetadata
 }
 
 type MultichainToken struct {
@@ -83,6 +91,18 @@ type CampaignRewardInput struct {
 	Type    RewardType
 }
 
+type GalxeCampaignMetadata struct {
+	CredentialId string
+}
+
+type PartnerOffersMetadata struct {
+}
+
+type CampaignMetadata struct {
+	GalxeMetadata         *GalxeCampaignMetadata
+	PartnerOffersMetadata *PartnerOffersMetadata
+}
+
 type CreateCampaignInput struct {
 	Name            string
 	Description     string
@@ -94,9 +114,16 @@ type CreateCampaignInput struct {
 	Rewards         CampaignRewardInput
 	EnrollMessage   string
 	EnrollmentMode  EnrollmentMode
+	Type            CampaignType
+	Metadata        CampaignMetadata
 }
 
 type EnrollInCampaignInput struct {
+	Adddress   common.Address
+	CampaignId string
+}
+
+type UnenrollFromCampaignInput struct {
 	Adddress   common.Address
 	CampaignId string
 }

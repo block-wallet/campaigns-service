@@ -165,7 +165,7 @@ func (h *Handler) EnrollInCampaign(ctx context.Context, req *campaignservicev1se
 		return nil, _err.ToGRPCError()
 	}
 
-	if !*enrolled {
+	if !enrolled {
 		return nil, errors.NewInternal("unable to register user in campaign").ToGRPCError()
 	}
 

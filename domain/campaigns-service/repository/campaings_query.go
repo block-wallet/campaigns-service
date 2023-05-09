@@ -33,7 +33,7 @@ func NewCampaignsQueryBuilder(filters *model.GetCampaignsFilters) *CampaignsQuer
 }
 
 func (r *CampaignsQueryBuilder) Query(ctx context.Context) (string, []any) {
-	campaignSelectFields := "c.id, c.name, c.description, c.status, c.start_date, c.end_date, c.enroll_message, c.enrollment_mode"
+	campaignSelectFields := "c.id, c.name, c.description, c.status, c.start_date, c.end_date, c.enroll_message, c.enrollment_mode, c.campaign_type, c.external_campaign_id"
 	tagsSelectFields := "string_agg(distinct ct.tag, ',') as tags"
 	supportedChainFields := "string_agg(distinct csc.chain_id, ',') as supported_chains"
 	tokenSelectFields := "t.id as token_id, t.name as token_name, t.symbol as token_symbol, t.decimals as token_decimals"
@@ -127,8 +127,8 @@ func (r *CampaignsQueryBuilder) withFilters(ctx context.Context, query string) s
 func (r *CampaignsQueryBuilder) Parse(ctx context.Context, rows *sql.Rows) (*model.Campaign, error) {
 	var parsedRow campaignrow
 	err := rows.Scan(&parsedRow.id, &parsedRow.name, &parsedRow.description, &parsedRow.status,
-		&parsedRow.startDate, &parsedRow.endDate, &parsedRow.enrollMessage, &parsedRow.enrollmentMode, &parsedRow.tags, &parsedRow.supportedChains, &parsedRow.tokenId,
-		&parsedRow.tokenName, &parsedRow.tokenSymbol, &parsedRow.decimals, &parsedRow.rewardId, &parsedRow.amounts, &parsedRow.rewardType, &parsedRow.participants,
+		&parsedRow.startDate, &parsedRow.endDate, &parsedRow.enrollMessage, &parsedRow.enrollmentMode, &parsedRow.campaignType, &parsedRow.externalCampaignId, &parsedRow.tags, &parsedRow.supportedChains,
+		&parsedRow.tokenId, &parsedRow.tokenName, &parsedRow.tokenSymbol, &parsedRow.decimals, &parsedRow.rewardId, &parsedRow.amounts, &parsedRow.rewardType, &parsedRow.participants,
 		&parsedRow.winners)
 	if err != nil {
 		return nil, err
@@ -156,12 +156,30 @@ func (r *CampaignsQueryBuilder) rowToCampaign(row campaignrow) (*model.Campaign,
 		Id:             row.id,
 		Name:           row.name,
 		Description:    row.description,
+		Type:           model.CampaignType(row.campaignType),
 		Status:         model.CampaignStatus(row.status),
 		StartDate:      startDate,
 		EndDate:        endDate,
 		EnrollMessage:  *row.enrollMessage,
 		EnrollmentMode: model.EnrollmentMode(row.enrollmentMode),
 	}
+
+	var campaignMetadata model.CampaignMetadata
+
+	switch campaign.Type {
+	case model.CAMPAIGN_TYPE_GALXE:
+		{
+			campaignMetadata.GalxeMetadata = &model.GalxeCampaignMetadata{
+				CredentialId: *row.externalCampaignId,
+			}
+		}
+	case model.CAMPAIGN_TYPE_PARTNER_OFFERS:
+		{
+			campaignMetadata.PartnerOffersMetadata = &model.PartnerOffersMetadata{}
+		}
+	}
+
+	campaign.Metadata = campaignMetadata
 
 	if row.supportedChains != "" {
 		chainsStr := strings.Split(row.supportedChains, SPLIT_TOKEN)
