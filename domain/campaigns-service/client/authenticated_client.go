@@ -40,11 +40,15 @@ func (ac *authenticatedClient) Do(httpRequest *http.Request) (*http.Response, er
 
 func (ac *authenticatedClient) debugRequest(httpRequest *http.Request) {
 	buf := new(bytes.Buffer)
-	ioBody, _ := httpRequest.GetBody()
-	buf.ReadFrom(ioBody)
-	respBytes := buf.String()
-	respString := string(respBytes)
 	logger.Sugar.Infof("http-request-headers: %v", httpRequest.Header)
 	logger.Sugar.Infof("http-request-url: %v", httpRequest.URL)
-	logger.Sugar.Infof("http-request-body: %v", respString)
+	if ioBody, err := httpRequest.GetBody(); err == nil && ioBody != nil {
+		_, err := buf.ReadFrom(ioBody)
+		if err == nil {
+			respBytes := buf.String()
+			respString := string(respBytes)
+			logger.Sugar.Infof("http-request-body: %v", respString)
+		}
+	}
+
 }
