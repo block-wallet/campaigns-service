@@ -35,6 +35,22 @@ func (c *ConverterImpl) ConvertFromModelCampaignToProtoCampaign(campaign *model.
 		Tags:            campaign.Tags,
 		EnrollMessage:   campaign.EnrollMessage,
 		EnrollmentMode:  campaign_FromModelEnrollmentModeToProtoEnrollmentMode(campaign.EnrollmentMode),
+		CampaignType:    campaign_FromModelCampaignTypeToProtoCampaignType(campaign.Type),
+	}
+
+	switch campaign.Type {
+	case model.CAMPAIGN_TYPE_GALXE:
+		ret.CampaignMetadata = &campaignservicev1service.Campaign_GalxeMetadata{
+			GalxeMetadata: &campaignservicev1service.GalxeCampaignMetadata{
+				CredentialId: campaign.Metadata.GalxeMetadata.CredentialId,
+			},
+		}
+	case model.CAMPAIGN_TYPE_PARTNER_OFFERS:
+		{
+			ret.CampaignMetadata = &campaignservicev1service.Campaign_PartnerOffersMetadata{
+				PartnerOffersMetadata: &campaignservicev1service.PartnerOffersCampaignMetadata{},
+			}
+		}
 	}
 
 	if campaign.Rewards != nil {
@@ -120,7 +136,25 @@ func (c *ConverterImpl) ConvertFromProtoCreateCampaignToModelCreateCampaign(inpu
 		SupportedChains: campaignInput.SupportedChains,
 		EnrollMessage:   enrollMessage,
 		EnrollmentMode:  campaign_FromProtoEnrollmentModeToModelEnrollmentMode(campaignInput.EnrollmentMode),
+		Type:            campaign_FromProtoCampaignTypeToModelCampaignType(campaignInput.CampaignType),
 	}
+
+	campaignMetadata := model.CampaignMetadata{}
+
+	switch createCampaignRet.Type {
+	case model.CAMPAIGN_TYPE_GALXE:
+		{
+			campaignMetadata.GalxeMetadata = &model.GalxeCampaignMetadata{
+				CredentialId: campaignInput.GetGalxeMetadata().CredentialId,
+			}
+		}
+	case model.CAMPAIGN_TYPE_PARTNER_OFFERS:
+		{
+			campaignMetadata.PartnerOffersMetadata = &model.PartnerOffersMetadata{}
+		}
+	}
+
+	createCampaignRet.Metadata = campaignMetadata
 
 	return &createCampaignRet, nil
 }
@@ -222,6 +256,26 @@ func campaign_FromProtoEnrollmentModeToModelEnrollmentMode(protoEnrollmentMode c
 		return model.INSTANCE_UNLIMITED_ENROLL
 	}
 	return model.INSTANCE_SINGLE_ENROLL
+}
+
+func campaign_FromModelCampaignTypeToProtoCampaignType(modelCampaignType model.CampaignType) campaignservicev1service.CampaignType {
+	switch modelCampaignType {
+	case model.CAMPAIGN_TYPE_PARTNER_OFFERS:
+		return campaignservicev1service.CampaignType_CAMPAIGN_TYPE_PARTNER_OFFERS
+	case model.CAMPAIGN_TYPE_GALXE:
+		return campaignservicev1service.CampaignType_CAMPAIGN_TYPE_GALXE
+	}
+	return campaignservicev1service.CampaignType_CAMPAIGN_TYPE_PARTNER_OFFERS
+}
+
+func campaign_FromProtoCampaignTypeToModelCampaignType(protoCampaignType campaignservicev1service.CampaignType) model.CampaignType {
+	switch protoCampaignType {
+	case campaignservicev1service.CampaignType_CAMPAIGN_TYPE_PARTNER_OFFERS:
+		return model.CAMPAIGN_TYPE_PARTNER_OFFERS
+	case campaignservicev1service.CampaignType_CAMPAIGN_TYPE_GALXE:
+		return model.CAMPAIGN_TYPE_GALXE
+	}
+	return model.CAMPAIGN_TYPE_PARTNER_OFFERS
 }
 
 func rewards_fromModelTypeToProtoType(rewardType model.RewardType) campaignservicev1service.RewardType {

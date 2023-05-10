@@ -110,6 +110,13 @@ run: build
 	@echo "----------------------------------------------------------------"
 	./build/campaignsservice serve
 
+.PHONY: dev/run
+dev/run:
+	@echo "----------------------------------------------------------------"
+	@echo " Building and running the local dev environment using docker-compose..."
+	@echo "----------------------------------------------------------------"
+	docker-compose -f docker-compose.yml up --build
+
 .PHONY: dev/up
 dev/up:
 	@echo "----------------------------------------------------------------"

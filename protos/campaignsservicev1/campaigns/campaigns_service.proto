@@ -92,6 +92,11 @@ message CreateCampaignMsg {
     repeated uint32 supported_chains = 8;
     string enroll_message = 9;
     EnrollmentMode enrollment_mode = 10;
+    CampaignType campaign_type = 11;
+    oneof metadata {
+      GalxeCampaignMetadata galxe_metadata = 12;
+      PartnerOffersCampaignMetadata partner_offers_metadata = 13;
+    }
   }
   CreateCampaignInput campaign = 1;
 }
@@ -125,6 +130,14 @@ message GetCampaignEnrollMessageReply {
   string message = 1;
 }
 
+message GalxeCampaignMetadata {
+  string credential_id = 1;
+}
+
+message PartnerOffersCampaignMetadata {
+
+}
+
 message Campaign {
   string id = 1;
   repeated uint32 supported_chains = 2;
@@ -139,6 +152,11 @@ message Campaign {
   repeated string tags = 11;
   string enroll_message = 12;
   EnrollmentMode enrollment_mode = 13;
+  CampaignType campaign_type = 14;
+  oneof campaign_metadata {
+    GalxeCampaignMetadata galxe_metadata = 15;
+    PartnerOffersCampaignMetadata partner_offers_metadata = 16;
+  }
 }
 
 // The rewards for the campaigns winners
@@ -179,6 +197,12 @@ enum EnrollmentMode {
   ENROLLMENT_MODE_INVALID = 0;
   INSTANCE_UNLIMITED_ENROLL = 1;
   INSTANCE_SINGLE_ENROLL = 2;
+}
+
+enum CampaignType { 
+  CAMPAIGN_TYPE_INVALID = 0;
+  CAMPAIGN_TYPE_PARTNER_OFFERS = 1;
+  CAMPAIGN_TYPE_GALXE = 2;
 }
 
 enum RewardType {

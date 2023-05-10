@@ -87,7 +87,13 @@ func (r *SQLRepository) NewCampaign(ctx context.Context, input *model.CreateCamp
 	}
 	campaignId := uuid.NewString()
 
-	_, err = tx.ExecContext(ctx, "INSERT INTO campaigns (id,name,description,status,start_date,end_date,enroll_message,enrollment_mode) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)", campaignId, input.Name, input.Description, input.Status, input.StartDate, input.EndDate, input.EnrollMessage, input.EnrollmentMode)
+	var externalCampaignId *string = nil
+
+	if input.Type == model.CAMPAIGN_TYPE_GALXE {
+		externalCampaignId = &input.Metadata.GalxeMetadata.CredentialId
+	}
+
+	_, err = tx.ExecContext(ctx, "INSERT INTO campaigns (id,name,description,status,start_date,end_date,enroll_message,enrollment_mode,campaign_type,external_campaign_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)", campaignId, input.Name, input.Description, input.Status, input.StartDate, input.EndDate, input.EnrollMessage, input.EnrollmentMode, input.Type, externalCampaignId)
 	if err != nil {
 		return nil, err
 	}
@@ -115,27 +121,48 @@ func (r *SQLRepository) NewCampaign(ctx context.Context, input *model.CreateCamp
 	return &campaignId, nil
 }
 
-func (r *SQLRepository) EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (*bool, error) {
-	ok := true
+func (r *SQLRepository) EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (bool, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
 	_, err = tx.ExecContext(ctx, "INSERT INTO participants (campaign_id,account_address) VALUES ($1,$2)", input.CampaignId, input.Adddress.String())
 	if err != nil {
 		if _err := tx.Rollback(); _err != nil {
 			logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())
-			return nil, _err
+			return false, _err
 		}
-		return nil, err
+		return false, err
 	}
 
 	if err = tx.Commit(); err != nil {
-		return nil, err
+		return false, err
 	}
 
-	return &ok, nil
+	return true, nil
+}
+
+func (r *SQLRepository) UnenrollFromCampaign(ctx context.Context, input *model.UnenrollFromCampaignInput) (bool, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, err
+	}
+
+	_, err = tx.ExecContext(ctx, "DELETE FROM participants p WHERE p.campaign_id = $1 and p.account_address = $2;", input.CampaignId, input.Adddress.String())
+	if err != nil {
+		if _err := tx.Rollback(); _err != nil {
+			logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())
+			return false, _err
+		}
+		return false, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (r *SQLRepository) UpdateCampaign(ctx context.Context, updates *model.UpdateCampaignInput) (*bool, error) {
@@ -195,27 +222,21 @@ func (r *SQLRepository) UpdateCampaign(ctx context.Context, updates *model.Updat
 	return &ok, nil
 }
 
-func (r *SQLRepository) ParticipantExists(ctx context.Context, campaignId string, accountAddress string) (*bool, error) {
+func (r *SQLRepository) ParticipantExists(ctx context.Context, campaignId string, accountAddress string) (bool, error) {
 	statement, err := r.db.Prepare("SELECT campaign_id from participants p where p.campaign_id = $1 and p.account_address = $2;")
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 	var id string
 	err = statement.QueryRow(campaignId, accountAddress).Scan(&id)
-	ret := true
 	if err != nil {
-		ret = false
 		//An error occurred.
 		if err != sql.ErrNoRows {
-			return nil, err
+			return false, err
 		}
 	}
 
-	if id != campaignId {
-		ret = false
-	}
-
-	return &ret, nil
+	return id == campaignId, nil
 }
 
 func (r *SQLRepository) GetTokenById(ctx context.Context, id string) (*model.MultichainToken, error) {

@@ -67,6 +67,17 @@ func (r *RequestValidator) ValidateCreateCampaignRequest(req *campaignservicev1s
 		return errors.NewInvalidArgument("campaigns should target at least one chain.")
 	}
 
+	if campaignReq.CampaignType == campaignservicev1service.CampaignType_CAMPAIGN_TYPE_INVALID {
+		return errors.NewInvalidArgument("you should specify the campaign type.")
+	}
+
+	if campaignReq.CampaignType == campaignservicev1service.CampaignType_CAMPAIGN_TYPE_GALXE {
+		galxeMetadata := campaignReq.GetGalxeMetadata()
+		if galxeMetadata == nil || galxeMetadata.GetCredentialId() == "" {
+			return errors.NewInvalidArgument("galxe campaigns should specify the campaign's credential id.")
+		}
+	}
+
 	if campaignReq.Rewards == nil {
 		return errors.NewInvalidArgument("you must specify rewards for the campaign.")
 	} else {

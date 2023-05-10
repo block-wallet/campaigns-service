@@ -132,6 +132,8 @@ func getCreateCampaignBase() *campaignsservicev1.CreateCampaignMsg_CreateCampaig
 			Type:    campaignsservicev1.RewardType_REWARD_TYPE_PODIUM,
 			Amounts: []string{"3", "2", "1"},
 		},
+		EnrollmentMode: campaignsservicev1.EnrollmentMode_INSTANCE_SINGLE_ENROLL,
+		CampaignType:   campaignsservicev1.CampaignType_CAMPAIGN_TYPE_PARTNER_OFFERS,
 	}
 }
 
@@ -366,6 +368,24 @@ func Test_ValidateCreateCampaignRequest(t *testing.T) {
 				new.EndDate = time.Now().AddDate(0, 3, 0).Format(model.CampaignTimeFormatLayout)
 				new.StartDate = time.Now().AddDate(0, 2, 0).Format(model.CampaignTimeFormatLayout)
 				new.IsActive = true
+				return new
+			},
+			expected: errors.NewInvalidArgument("invalid"),
+		},
+		{
+			name: "should fail if campaign type is invalid",
+			generator: func() *inputType {
+				new := getCreateCampaignBase()
+				new.CampaignType = campaignsservicev1.CampaignType_CAMPAIGN_TYPE_INVALID
+				return new
+			},
+			expected: errors.NewInvalidArgument("invalid"),
+		},
+		{
+			name: "should fail if campaign type is galxe and the credential_id is not specified",
+			generator: func() *inputType {
+				new := getCreateCampaignBase()
+				new.CampaignType = campaignsservicev1.CampaignType_CAMPAIGN_TYPE_GALXE
 				return new
 			},
 			expected: errors.NewInvalidArgument("invalid"),

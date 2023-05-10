@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/block-wallet/campaigns-service/domain/campaigns-service/client"
 	campaignsconverter "github.com/block-wallet/campaigns-service/domain/campaigns-service/converter"
 	campaignsrepository "github.com/block-wallet/campaigns-service/domain/campaigns-service/repository"
 	campaignsservice "github.com/block-wallet/campaigns-service/domain/campaigns-service/service"
@@ -89,14 +90,15 @@ func (r *Runnable) Run(args Args) *grpc.Server {
 	metricsCollector := monitoreddb.NewPrometheusDbMetricsCollector("campaigns-db", sqlDatabase)
 	metricsCollector.Register()
 
+	galxeClient := client.NewGalxeClient(galxeGraphQLEndpoint, galxeAccessToken)
 	repository := campaignsrepository.NewSQLRepository(sqlDatabase)
-	campaignService := campaignsservice.NewServiceImpl(repository)
+	campaignsService := campaignsservice.NewServiceImpl(repository, galxeClient)
 	campaignsServiceValidator := campaignsservicevalidator.NewRequestValidator()
 	campaignsServiceConverter := campaignsconverter.NewConverterImpl()
 	authenticator := auth.NewBasicAuth(adminUsername, adminPassword)
 
 	grpcService := campaignsgrpcservice.GRPCService(campaignsgrpcservice.Options{
-		CampaignsService: campaignService,
+		CampaignsService: campaignsService,
 		Validator:        campaignsServiceValidator,
 		Converter:        campaignsServiceConverter,
 		Authenticator:    authenticator,

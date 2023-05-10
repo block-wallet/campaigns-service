@@ -59,6 +59,7 @@ You can then test that the server is working issuing `curl localhost:8080/ready`
 You can use `docker-compose` to run the campaignsservice and the postgres database without any extra configuration. To do so, run:
 
 - `make dev/up` -> Run postgres database and service. Run `make dev/down` to stop it.
+- `make dev/run` -> Run postgres database, build and run the campaigns service using `latest` tag. Run `make dev/down` to stop it.
 - `make service/up` -> Run just the campaignsservice. Run `make service/down` to stop it.
 - `make db/up` -> Run just the postgres database. Run `make db/down` to stop it.
 

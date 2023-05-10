@@ -45,20 +45,18 @@ func (_m *Service) CreateCampaign(ctx context.Context, input *model.CreateCampai
 }
 
 // EnrollInCampaign provides a mock function with given fields: ctx, input
-func (_m *Service) EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (*bool, errors.RichError) {
+func (_m *Service) EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (bool, errors.RichError) {
 	ret := _m.Called(ctx, input)
 
-	var r0 *bool
+	var r0 bool
 	var r1 errors.RichError
-	if rf, ok := ret.Get(0).(func(context.Context, *model.EnrollInCampaignInput) (*bool, errors.RichError)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *model.EnrollInCampaignInput) (bool, errors.RichError)); ok {
 		return rf(ctx, input)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *model.EnrollInCampaignInput) *bool); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *model.EnrollInCampaignInput) bool); ok {
 		r0 = rf(ctx, input)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*bool)
-		}
+		r0 = ret.Get(0).(bool)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *model.EnrollInCampaignInput) errors.RichError); ok {

@@ -10,16 +10,19 @@ import (
 	"github.com/block-wallet/campaigns-service/utils/errors"
 	"github.com/block-wallet/campaigns-service/utils/logger"
 
+	"github.com/block-wallet/campaigns-service/domain/campaigns-service/client"
 	campaignsrepository "github.com/block-wallet/campaigns-service/domain/campaigns-service/repository"
 )
 
 type ServiceImpl struct {
-	repository campaignsrepository.Repository
+	repository  campaignsrepository.Repository
+	galxeClient client.GalxeClient
 }
 
-func NewServiceImpl(repository campaignsrepository.Repository) *ServiceImpl {
+func NewServiceImpl(repository campaignsrepository.Repository, galxeClient client.GalxeClient) *ServiceImpl {
 	return &ServiceImpl{
-		repository: repository,
+		repository:  repository,
+		galxeClient: galxeClient,
 	}
 }
 
@@ -77,35 +80,62 @@ func (s *ServiceImpl) CreateCampaign(ctx context.Context, input *model.CreateCam
 	return campaign, nil
 }
 
-func (s *ServiceImpl) EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (*bool, errors.RichError) {
+func (s *ServiceImpl) EnrollInCampaign(ctx context.Context, input *model.EnrollInCampaignInput) (bool, errors.RichError) {
 	campaign, err := s.repository.GetCampaignById(ctx, input.CampaignId)
 	if err != nil {
-		return nil, errors.NewInternal("error checking campaign existance")
+		return false, errors.NewInternal("error checking campaign existance")
 	}
 
 	if campaign == nil {
-		return nil, errors.NewNotFound(fmt.Sprintf("campaign with id: %v not found", input.CampaignId))
+		return false, errors.NewNotFound(fmt.Sprintf("campaign with id: %v not found", input.CampaignId))
 	}
 
 	if campaign.Status != model.STATUS_ACTIVE && campaign.Status != model.STATUS_PENDING {
-		return nil, errors.NewFailedPrecondition("cannot enroll in a non-active or pending campaign")
+		return false, errors.NewFailedPrecondition("cannot enroll in a non-active or pending campaign")
 	}
 
 	exists, err := s.repository.ParticipantExists(ctx, input.CampaignId, input.Adddress.String())
 	if err != nil {
-		return nil, errors.NewInternal("error checking campaign participants")
+		return false, errors.NewInternal("error checking campaign participants")
 	}
 
-	if *exists {
+	if exists {
 		logger.Sugar.WithCtx(ctx).Infof("Account: %s already enrolled in campaign: %v", input.Adddress, input.CampaignId)
 		return exists, nil
 	}
 
 	ok, err := s.repository.EnrollInCampaign(ctx, input)
 	if err != nil {
-		return nil, errors.NewInternal(err.Error())
+		return false, errors.NewInternal(err.Error())
 	}
+
+	//register user in galxe campaign
+	if ok && campaign.Type == model.CAMPAIGN_TYPE_GALXE {
+		populated, err := s.galxeClient.PopulateParticipant(ctx, client.PopulateParticipantsInput{
+			Address:      input.Adddress,
+			CredentialId: campaign.Metadata.GalxeMetadata.CredentialId,
+		})
+
+		if err != nil || !populated {
+			if err != nil {
+				logger.Sugar.WithCtx(ctx).Errorf("error populating participant to Galxe campaign. Error: %v ", err.Error())
+			}
+			_, err := s.UnenrollParticipant(ctx, &model.UnenrollFromCampaignInput{
+				Adddress:   input.Adddress,
+				CampaignId: input.CampaignId,
+			})
+			if err != nil {
+				logger.Sugar.WithCtx(ctx).Errorf("error unenrolling account from campaign. Error: %v", err.Error())
+			}
+			return false, errors.NewInternal("error populating participant to Galxe campaign.")
+		}
+	}
+
 	return ok, nil
+}
+
+func (s *ServiceImpl) UnenrollParticipant(ctx context.Context, input *model.UnenrollFromCampaignInput) (bool, error) {
+	return s.repository.UnenrollFromCampaign(ctx, input)
 }
 
 func (s *ServiceImpl) UpdateCampaign(ctx context.Context, input *model.UpdateCampaignInput) (*model.Campaign, errors.RichError) {
