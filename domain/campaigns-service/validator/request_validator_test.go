@@ -431,17 +431,17 @@ func Test_ValidateUpdateCampaignRequest(t *testing.T) {
 		{
 			name: "should fail if winners length is bigger than 0 and status is not specified",
 			input: &campaignsservicev1.UpdateCampaignMsg{
-				CampaignId: "35ce94ce-8135-46f0-a5b1-9a09df0b6a75",
-				Winners:    []string{"0x6B25a67345111737d5FBEA0dd1443F64F0ef17CB"},
+				CampaignId:       "35ce94ce-8135-46f0-a5b1-9a09df0b6a75",
+				EligibleAccounts: []string{"0x6B25a67345111737d5FBEA0dd1443F64F0ef17CB"},
 			},
 			expected: errors.NewInvalidArgument("invalid argument"),
 		},
 		{
 			name: "should fail if winners length is bigger than 0 and status is active",
 			input: &campaignsservicev1.UpdateCampaignMsg{
-				CampaignId: "35ce94ce-8135-46f0-a5b1-9a09df0b6a75",
-				Status:     campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_ACTIVE,
-				Winners:    []string{"0x6B25a67345111737d5FBEA0dd1443F64F0ef17CB"},
+				CampaignId:       "35ce94ce-8135-46f0-a5b1-9a09df0b6a75",
+				Status:           campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_ACTIVE,
+				EligibleAccounts: []string{"0x6B25a67345111737d5FBEA0dd1443F64F0ef17CB"},
 			},
 			expected: errors.NewInvalidArgument("invalid argument"),
 		},
@@ -461,11 +461,18 @@ func Test_ValidateUpdateCampaignRequest(t *testing.T) {
 			},
 		},
 		{
-			name: "shuld work updating status to finished",
+			name: "shuld work updating status to waitlist",
 			input: &campaignsservicev1.UpdateCampaignMsg{
 				CampaignId: "35ce94ce-8135-46f0-a5b1-9a09df0b6a75",
-				Status:     campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_FINISHED,
-				Winners:    []string{"0x6B25a67345111737d5FBEA0dd1443F64F0ef17CB"},
+				Status:     campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_WAITLIST,
+			},
+		},
+		{
+			name: "shuld work updating status to finished",
+			input: &campaignsservicev1.UpdateCampaignMsg{
+				CampaignId:       "35ce94ce-8135-46f0-a5b1-9a09df0b6a75",
+				Status:           campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_FINISHED,
+				EligibleAccounts: []string{"0x6B25a67345111737d5FBEA0dd1443F64F0ef17CB"},
 			},
 		},
 	}

@@ -658,9 +658,9 @@ func Test_UpdateCampaign(t *testing.T) {
 		{
 			name: "should return error if the winners does not match the amount of rewards in a podium like campaign",
 			input: &model.UpdateCampaignInput{
-				Id:      activeCampaign.Id,
-				Stauts:  &statusFinished,
-				Winners: &[]common.Address{activeCampaign.Accounts[0]},
+				Id:               activeCampaign.Id,
+				Stauts:           &statusFinished,
+				EligibleAccounts: &[]common.Address{activeCampaign.Accounts[0]},
 			},
 			expectedServiceErr: errors.NewInvalidArgument("invalid"),
 			repository: repositoryMock{
@@ -670,9 +670,9 @@ func Test_UpdateCampaign(t *testing.T) {
 		{
 			name: "should return error if one of the winners is not registered in the campaign",
 			input: &model.UpdateCampaignInput{
-				Id:      activeCampaign.Id,
-				Stauts:  &statusFinished,
-				Winners: &[]common.Address{common.HexToAddress("0xB1e8eB3bd367095F1eD945ba8bf67cc698D958c9")},
+				Id:               activeCampaign.Id,
+				Stauts:           &statusFinished,
+				EligibleAccounts: &[]common.Address{common.HexToAddress("0xB1e8eB3bd367095F1eD945ba8bf67cc698D958c9")},
 			},
 			expectedServiceErr: errors.NewInvalidArgument("invalid"),
 			repository: repositoryMock{
@@ -683,9 +683,9 @@ func Test_UpdateCampaign(t *testing.T) {
 		{
 			name: "should return the updated campaign",
 			input: &model.UpdateCampaignInput{
-				Id:      activeCampaign.Id,
-				Stauts:  &statusFinished,
-				Winners: &activeCampaign.Accounts,
+				Id:               activeCampaign.Id,
+				Stauts:           &statusFinished,
+				EligibleAccounts: &activeCampaign.Accounts,
 			},
 			expectedServiceRes: &activeCampaign,
 			repository: repositoryMock{

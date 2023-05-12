@@ -93,7 +93,6 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 				Accounts:        participans,
 				Tags:            []string{"tag1", "tag2"},
 				EnrollMessage:   "Custom enroll message",
-				Winners:         []string{},
 				CampaignType:    campaignsservicev1.CampaignType_CAMPAIGN_TYPE_GALXE,
 				CampaignMetadata: &campaignsservicev1.Campaign_GalxeMetadata{
 					GalxeMetadata: &campaignsservicev1.GalxeCampaignMetadata{
@@ -160,7 +159,7 @@ func Test_ConvertFromProtoCampaignFiltersToModelCampaignFilters(t *testing.T) {
 		{
 			name: "Should convert all the filters",
 			input: &campaignsservicev1.GetCampaignsFilters{
-				Statuses: []campaignsservicev1.CampaignStatus{
+				Status: []campaignsservicev1.CampaignStatus{
 					campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_ACTIVE,
 					campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_CANCELLED,
 					campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_FINISHED,
@@ -477,14 +476,14 @@ func Test_ConvertFromProtoUpdateCampaignToModelUpdateCampaign(t *testing.T) {
 		{
 			name: "should map status and winners",
 			input: &campaignsservicev1.UpdateCampaignMsg{
-				CampaignId: "campaign-1",
-				Status:     campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_FINISHED,
-				Winners:    winners,
+				CampaignId:       "campaign-1",
+				Status:           campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_FINISHED,
+				EligibleAccounts: winners,
 			},
 			expected: &model.UpdateCampaignInput{
 				Id:     "campaign-1",
 				Stauts: &statusFinished,
-				Winners: &[]common.Address{
+				EligibleAccounts: &[]common.Address{
 					common.HexToAddress(winners[0]),
 					common.HexToAddress(winners[1]),
 					common.HexToAddress(winners[2]),
