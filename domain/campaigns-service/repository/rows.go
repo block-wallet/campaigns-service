@@ -1,5 +1,7 @@
 package campaignsrepository
 
+import "time"
+
 type campaignrow struct {
 	id                 string
 	name               string
@@ -8,6 +10,8 @@ type campaignrow struct {
 	startDate          string
 	endDate            string
 	enrollmentMode     string
+	createdAt          time.Time
+	updatedAt          time.Time
 	tags               *string
 	supportedChains    string
 	campaignType       string
@@ -16,8 +20,7 @@ type campaignrow struct {
 	tokenSymbol        *string
 	decimals           *int64
 	amounts            *string
-	participants       *string
-	winners            *string
+	participants       *[]byte
 	rewardId           *string
 	rewardType         *string
 	enrollMessage      *string
@@ -30,4 +33,10 @@ type tokenrow struct {
 	symbol      string
 	description string
 	decimals    int
+}
+
+type participantJSONRow struct {
+	AccountAddress  string `json:"account_address"`
+	Position        *int   `json:"position"`
+	EarlyEnrollment bool   `json:"early_enrollment"`
 }

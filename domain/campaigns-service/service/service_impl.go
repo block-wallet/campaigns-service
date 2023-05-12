@@ -90,8 +90,8 @@ func (s *ServiceImpl) EnrollInCampaign(ctx context.Context, input *model.EnrollI
 		return false, errors.NewNotFound(fmt.Sprintf("campaign with id: %v not found", input.CampaignId))
 	}
 
-	if campaign.Status != model.STATUS_ACTIVE && campaign.Status != model.STATUS_PENDING {
-		return false, errors.NewFailedPrecondition("cannot enroll in a non-active or pending campaign")
+	if campaign.Status != model.STATUS_ACTIVE && campaign.Status != model.STATUS_WAITLIST {
+		return false, errors.NewFailedPrecondition("you can only enroll in an Active or Waitlist campaign.")
 	}
 
 	exists, err := s.repository.ParticipantExists(ctx, input.CampaignId, input.Adddress.String())
@@ -103,6 +103,8 @@ func (s *ServiceImpl) EnrollInCampaign(ctx context.Context, input *model.EnrollI
 		logger.Sugar.WithCtx(ctx).Infof("Account: %s already enrolled in campaign: %v", input.Adddress, input.CampaignId)
 		return exists, nil
 	}
+
+	input.EarlyEnrollment = model.STATUS_WAITLIST == campaign.Status
 
 	ok, err := s.repository.EnrollInCampaign(ctx, input)
 	if err != nil {
@@ -120,13 +122,12 @@ func (s *ServiceImpl) EnrollInCampaign(ctx context.Context, input *model.EnrollI
 			if err != nil {
 				logger.Sugar.WithCtx(ctx).Errorf("error populating participant to Galxe campaign. Error: %v ", err.Error())
 			}
-			_, err := s.UnenrollParticipant(ctx, &model.UnenrollFromCampaignInput{
+
+			s.UnenrollParticipant(ctx, &model.UnenrollFromCampaignInput{
 				Adddress:   input.Adddress,
 				CampaignId: input.CampaignId,
 			})
-			if err != nil {
-				logger.Sugar.WithCtx(ctx).Errorf("error unenrolling account from campaign. Error: %v", err.Error())
-			}
+
 			return false, errors.NewInternal("error populating participant to Galxe campaign.")
 		}
 	}
@@ -135,7 +136,12 @@ func (s *ServiceImpl) EnrollInCampaign(ctx context.Context, input *model.EnrollI
 }
 
 func (s *ServiceImpl) UnenrollParticipant(ctx context.Context, input *model.UnenrollFromCampaignInput) (bool, error) {
-	return s.repository.UnenrollFromCampaign(ctx, input)
+	ok, err := s.repository.UnenrollFromCampaign(ctx, input)
+	if err != nil {
+		logger.Sugar.WithCtx(ctx).Errorf("error unenrolling account from campaign. Error: %v", err.Error())
+		return false, err
+	}
+	return ok, nil
 }
 
 func (s *ServiceImpl) UpdateCampaign(ctx context.Context, input *model.UpdateCampaignInput) (*model.Campaign, errors.RichError) {
@@ -170,7 +176,7 @@ func (s *ServiceImpl) canUpdateCampaign(current *model.Campaign, updates *model.
 	}
 
 	switch current.Status {
-	case model.STATUS_PENDING:
+	case model.STATUS_PENDING, model.STATUS_WAITLIST:
 		{
 			if updates.Stauts != nil {
 				if *updates.Stauts == model.STATUS_ACTIVE {
@@ -189,15 +195,15 @@ func (s *ServiceImpl) canUpdateCampaign(current *model.Campaign, updates *model.
 		}
 	case model.STATUS_ACTIVE:
 		{
-			if updates.Stauts != nil && *updates.Stauts == model.STATUS_PENDING {
-				return false, errors.NewFailedPrecondition("you can't set this campaign to PENDING. You can only either CANCEL or FINISH it.")
+			if updates.Stauts != nil && (*updates.Stauts == model.STATUS_PENDING || *updates.Stauts == model.STATUS_WAITLIST) {
+				return false, errors.NewFailedPrecondition("you can't set this campaign to PENDING or WAITLIST. You can only either CANCEL or FINISH it.")
 			}
 		}
 	}
 
 	if updates.Stauts != nil && *updates.Stauts == model.STATUS_FINISHED {
-		if updates.Winners != nil {
-			winners := *updates.Winners
+		if updates.EligibleAccounts != nil {
+			winners := *updates.EligibleAccounts
 			if len(winners) != len(current.Rewards.Amounts) && current.Rewards.Type == model.PODIUM_REWARD {
 				return false, errors.NewInvalidArgument("winners length should match the rewards amounts length for a PODIUM like reward.")
 			}

@@ -16,6 +16,7 @@ type CampaignType string
 
 const (
 	STATUS_PENDING   CampaignStatus = "PENDING"
+	STATUS_WAITLIST  CampaignStatus = "WAITLIST"
 	STATUS_ACTIVE    CampaignStatus = "ACTIVE"
 	STATUS_FINISHED  CampaignStatus = "FINISHED"
 	STATUS_CANCELLED CampaignStatus = "CANCELLED"
@@ -54,6 +55,15 @@ type Campaign struct {
 	EnrollmentMode  EnrollmentMode
 	Type            CampaignType
 	Metadata        CampaignMetadata
+	Participants    []CampaignParticipant
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+type CampaignParticipant struct {
+	AccountAddress  common.Address
+	EarlyEnrollment bool
+	Position        *int
 }
 
 type MultichainToken struct {
@@ -118,8 +128,9 @@ type CreateCampaignInput struct {
 }
 
 type EnrollInCampaignInput struct {
-	Adddress   common.Address
-	CampaignId string
+	Adddress        common.Address
+	CampaignId      string
+	EarlyEnrollment bool
 }
 
 type UnenrollFromCampaignInput struct {
@@ -132,7 +143,7 @@ type SetCampaignWinners struct {
 }
 
 type UpdateCampaignInput struct {
-	Id      string
-	Stauts  *CampaignStatus
-	Winners *[]common.Address
+	Id               string
+	Stauts           *CampaignStatus
+	EligibleAccounts *[]common.Address
 }
