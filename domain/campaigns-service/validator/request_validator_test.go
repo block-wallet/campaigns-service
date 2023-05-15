@@ -429,7 +429,7 @@ func Test_ValidateUpdateCampaignRequest(t *testing.T) {
 			expected: errors.NewInvalidArgument("invalid argument"),
 		},
 		{
-			name: "should fail if winners length is bigger than 0 and status is not specified",
+			name: "should fail if elegible accounts length is bigger than 0 and status is not specified",
 			input: &campaignsservicev1.UpdateCampaignMsg{
 				CampaignId:       "35ce94ce-8135-46f0-a5b1-9a09df0b6a75",
 				EligibleAccounts: []string{"0x6B25a67345111737d5FBEA0dd1443F64F0ef17CB"},
@@ -437,7 +437,7 @@ func Test_ValidateUpdateCampaignRequest(t *testing.T) {
 			expected: errors.NewInvalidArgument("invalid argument"),
 		},
 		{
-			name: "should fail if winners length is bigger than 0 and status is active",
+			name: "should fail if elegible accounts length is bigger than 0 and status is active",
 			input: &campaignsservicev1.UpdateCampaignMsg{
 				CampaignId:       "35ce94ce-8135-46f0-a5b1-9a09df0b6a75",
 				Status:           campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_ACTIVE,
@@ -446,7 +446,7 @@ func Test_ValidateUpdateCampaignRequest(t *testing.T) {
 			expected: errors.NewInvalidArgument("invalid argument"),
 		},
 		{
-			name: "should fail if winners length is 0 and status is finished",
+			name: "should fail if elegible accounts length is 0 and status is finished",
 			input: &campaignsservicev1.UpdateCampaignMsg{
 				CampaignId: "35ce94ce-8135-46f0-a5b1-9a09df0b6a75",
 				Status:     campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_FINISHED,

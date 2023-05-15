@@ -203,17 +203,17 @@ func (s *ServiceImpl) canUpdateCampaign(current *model.Campaign, updates *model.
 
 	if updates.Stauts != nil && *updates.Stauts == model.STATUS_FINISHED {
 		if updates.EligibleAccounts != nil {
-			winners := *updates.EligibleAccounts
-			if len(winners) != len(current.Rewards.Amounts) && current.Rewards.Type == model.PODIUM_REWARD {
-				return false, errors.NewInvalidArgument("winners length should match the rewards amounts length for a PODIUM like reward.")
+			elegibleAccounts := *updates.EligibleAccounts
+			if len(elegibleAccounts) != len(current.Rewards.Amounts) && current.Rewards.Type == model.PODIUM_REWARD {
+				return false, errors.NewInvalidArgument("elegible accounts length should match the rewards amounts length for a PODIUM like reward.")
 			}
 			participants := make(map[string]bool)
 			for _, p := range current.Participants {
 				participants[p.AccountAddress.String()] = true
 			}
-			for _, w := range winners {
-				if !participants[w.String()] {
-					return false, errors.NewInvalidArgument("all the winners should be registered in the campaign")
+			for _, account := range elegibleAccounts {
+				if !participants[account.String()] {
+					return false, errors.NewInvalidArgument("all the elegible accounts should be registered in the campaign")
 				}
 			}
 		}

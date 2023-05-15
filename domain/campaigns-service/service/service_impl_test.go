@@ -662,7 +662,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			},
 		},
 		{
-			name: "should return error if the winners does not match the amount of rewards in a podium like campaign",
+			name: "should return error if the number of elegible accounts does not match the amount of rewards in a podium like campaign",
 			input: &model.UpdateCampaignInput{
 				Id:               activeCampaign.Id,
 				Stauts:           &statusFinished,
@@ -674,7 +674,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			},
 		},
 		{
-			name: "should return error if one of the winners is not registered in the campaign",
+			name: "should return error if one of the elegible accounts is not registered in the campaign",
 			input: &model.UpdateCampaignInput{
 				Id:               activeCampaign.Id,
 				Stauts:           &statusFinished,

@@ -12,7 +12,7 @@
 
 # BlockWallet - Campaigns service
 
-This a service that stores the BlockWallet's incentive driven campaigns along with their participants, rewards and winners.
+This a service that stores the BlockWallet's incentive driven campaigns along with their participants, rewards and elegible accounts.
 
 ## Summary
 
@@ -144,7 +144,7 @@ Note that this endpoint returns ACTIVE campaigns by default. In order to change 
                 "type": "REWARD_TYPE_PODIUM"
             },
             "accounts": [],
-            "winners": [],
+            "participants": [],
             "tags": [
                 "BLANK",
                 "staking2"
@@ -195,7 +195,7 @@ service populates all the necessary data and store it in the KV database initial
                 "type": "REWARD_TYPE_PODIUM"
             },
             "accounts": [],
-            "winners": [],
+            "participants": [],
             "tags": [
                 "BLANK",
                 "staking2"
@@ -389,28 +389,35 @@ If you want to specify the `token_id` you should only remove the `rewards.create
             ],
             "type": "REWARD_TYPE_PODIUM"
         },
-        "accounts": [],
-        "winners": [],
+        "accounts": ["0x1fC50bFc3E5c9C937fC0baf7422d19e39b00eDBc"],
+        "participants": [{
+                "accountAddress": "0x1fC50bFc3E5c9C937fC0baf7422d19e39b00eDBc",
+                "earlyEnrollment": false,
+                "eligibility": null
+        }],
         "tags": [
             "BLANK",
             "staking2"
         ],
-        "enrollMessage": "Sign this message to enroll in Campaign 2"
+        "enrollMessage": "Sign this message to enroll in Campaign 2",
+        "enrollmentMode": "INSTANCE_UNLIMITED_ENROLL",
+        "campaignType": "CAMPAIGN_TYPE_PARTNER_OFFERS",
     }
 }
 ```
 
 #### UpdateCampaign
 
-Admins can only update campaigns status and in case of updating the status to `FINISHED` they can also specify the winners. The winners may change depending on the campaign's reward type, where those campaigns which rewards are of they type `PODIUM` the amount of winners should match the quantity of `amounts`.
+Admins can only update campaigns status and in case of updating the status to `FINISHED` they can also specify the elegible accounts. The elegible accounts may change depending on the campaign's reward type, where those campaigns which rewards are of they type `PODIUM` the amount of accounts should match the quantity of `amounts`.
 
 Possible transitions:
 
-- `PENDING` -> `ACTIVE` (Campaign's start_date should be after now and end_date should be before the current datetime)
+- `PENDING` -> `WAITLIST`
+- `PENDING` or `WAITLIST` -> `ACTIVE` (Campaign's start_date should be after now and end_date should be before the current datetime)
 - `PENDING` -> `CANCELLED`
 - `ACTIVE` -> `CANCELLED`
-- `ACTIVE` -> `FINISHED` (must specify winners)
-- `FINISHED` -> `FINISHED` (must specify winners again)
+- `ACTIVE` -> `FINISHED` (must specify elegible accounts)
+- `FINISHED` -> `FINISHED` (must specify elegible accounts again)
 
 If some of these transitions cannot fulfill what you want to do with the campaign, you should `CANCEL` it and create a new one.
 
@@ -421,7 +428,7 @@ If some of these transitions cannot fulfill what you want to do with the campaig
 ```
 {
     "stauts": "CAMPAIGN_STATUS_FINISHED",
-    "winners":["0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22","0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C21","0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C32"]
+    "elegibleAccounts":["0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22","0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C21","0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C32"]
 }
 ```
 

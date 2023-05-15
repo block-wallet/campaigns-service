@@ -474,7 +474,7 @@ func Test_ConvertFromProtoUpdateCampaignToModelUpdateCampaign(t *testing.T) {
 	conv := NewConverterImpl()
 	statusCancelled := model.STATUS_CANCELLED
 	statusFinished := model.STATUS_FINISHED
-	winners := []string{
+	elegibleAccounts := []string{
 		"0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22",
 		"0x6B25a67345111737d5FBEA0dd1443F64F0ef17CB",
 		"0xFBCFfCE77aad086216C8016A73faeec1fE8fFEcc",
@@ -496,19 +496,19 @@ func Test_ConvertFromProtoUpdateCampaignToModelUpdateCampaign(t *testing.T) {
 			},
 		},
 		{
-			name: "should map status and winners",
+			name: "should map status and elegible accounts",
 			input: &campaignsservicev1.UpdateCampaignMsg{
 				CampaignId:       "campaign-1",
 				Status:           campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_FINISHED,
-				EligibleAccounts: winners,
+				EligibleAccounts: elegibleAccounts,
 			},
 			expected: &model.UpdateCampaignInput{
 				Id:     "campaign-1",
 				Stauts: &statusFinished,
 				EligibleAccounts: &[]common.Address{
-					common.HexToAddress(winners[0]),
-					common.HexToAddress(winners[1]),
-					common.HexToAddress(winners[2]),
+					common.HexToAddress(elegibleAccounts[0]),
+					common.HexToAddress(elegibleAccounts[1]),
+					common.HexToAddress(elegibleAccounts[2]),
 				},
 			},
 		},

@@ -179,8 +179,8 @@ func (c *ConverterImpl) ConvertFromProtoUpdateCampaignToModelUpdateCampaign(camp
 	}
 
 	if len(campaignInput.EligibleAccounts) > 0 {
-		winners := campaign_FromStringSliceToAddressesSlice(campaignInput.GetEligibleAccounts())
-		updateInput.EligibleAccounts = &winners
+		elegibleAccounts := campaign_FromStringSliceToAddressesSlice(campaignInput.GetEligibleAccounts())
+		updateInput.EligibleAccounts = &elegibleAccounts
 	}
 
 	return updateInput

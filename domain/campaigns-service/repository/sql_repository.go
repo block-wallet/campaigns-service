@@ -204,10 +204,10 @@ func (r *SQLRepository) UpdateCampaign(ctx context.Context, updates *model.Updat
 			}
 			return nil, err
 		}
-		winners := *updates.EligibleAccounts
-		for i := 0; i < len(winners); i++ {
-			winnerAddress := winners[i].String()
-			_, err := tx.ExecContext(ctx, "UPDATE participants SET position = $1 WHERE campaign_id = $2 and account_address = $3;", i+1, updates.Id, winnerAddress)
+		elegibleAccounts := *updates.EligibleAccounts
+		for i := 0; i < len(elegibleAccounts); i++ {
+			elegibleAddress := elegibleAccounts[i].String()
+			_, err := tx.ExecContext(ctx, "UPDATE participants SET position = $1 WHERE campaign_id = $2 and account_address = $3;", i+1, updates.Id, elegibleAddress)
 			if err != nil {
 				if _err := tx.Rollback(); _err != nil {
 					logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())

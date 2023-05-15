@@ -136,10 +136,6 @@ type UnenrollFromCampaignInput struct {
 	CampaignId string
 }
 
-type SetCampaignWinners struct {
-	Winners []common.Address
-}
-
 type UpdateCampaignInput struct {
 	Id               string
 	Stauts           *CampaignStatus
