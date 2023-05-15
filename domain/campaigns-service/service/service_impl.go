@@ -123,7 +123,7 @@ func (s *ServiceImpl) EnrollInCampaign(ctx context.Context, input *model.EnrollI
 				logger.Sugar.WithCtx(ctx).Errorf("error populating participant to Galxe campaign. Error: %v ", err.Error())
 			}
 
-			s.UnenrollParticipant(ctx, &model.UnenrollFromCampaignInput{
+			_, _ = s.UnenrollParticipant(ctx, &model.UnenrollFromCampaignInput{
 				Adddress:   input.Adddress,
 				CampaignId: input.CampaignId,
 			})

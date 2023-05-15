@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/block-wallet/campaigns-service/domain/model"
+	"github.com/block-wallet/campaigns-service/utils/logger"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -223,17 +224,21 @@ func (r *CampaignsQueryBuilder) rowToCampaign(row campaignrow) (*model.Campaign,
 
 	if row.participants != nil {
 		var data = make([]*participantJSONRow, 0)
-		json.Unmarshal(*row.participants, &data)
 		participants := make([]model.CampaignParticipant, 0)
-		for _, d := range data {
-			if d.AccountAddress != "" {
-				participants = append(participants, model.CampaignParticipant{
-					AccountAddress:  common.HexToAddress(d.AccountAddress),
-					EarlyEnrollment: d.EarlyEnrollment,
-					Position:        d.Position,
-				})
+		if err = json.Unmarshal(*row.participants, &data); err != nil {
+			logger.Sugar.Warnf("unable to parse participants data for campaign: %v. Error: %v", row.id, err.Error())
+		} else {
+			for _, d := range data {
+				if d.AccountAddress != "" {
+					participants = append(participants, model.CampaignParticipant{
+						AccountAddress:  common.HexToAddress(d.AccountAddress),
+						EarlyEnrollment: d.EarlyEnrollment,
+						Position:        d.Position,
+					})
+				}
 			}
 		}
+
 		campaign.Participants = participants
 	}
 	return &campaign, nil
