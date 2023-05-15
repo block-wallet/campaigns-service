@@ -36,17 +36,23 @@ func getActiveCampaign() model.Campaign {
 		Status:          model.STATUS_ACTIVE,
 		StartDate:       startDate,
 		EndDate:         endDate,
-		Accounts: []common.Address{
-			common.HexToAddress(participans[0]),
-			common.HexToAddress(participans[1]),
-			common.HexToAddress(participans[2]),
-		},
-		Tags:           []string{"tag1", "tag2"},
-		EnrollMessage:  "Custom enroll message",
-		EnrollmentMode: model.INSTANCE_SINGLE_ENROLL,
-		Type:           model.CAMPAIGN_TYPE_PARTNER_OFFERS,
+		Tags:            []string{"tag1", "tag2"},
+		EnrollMessage:   "Custom enroll message",
+		EnrollmentMode:  model.INSTANCE_SINGLE_ENROLL,
+		Type:            model.CAMPAIGN_TYPE_PARTNER_OFFERS,
 		Metadata: model.CampaignMetadata{
 			PartnerOffersMetadata: &model.PartnerOffersMetadata{},
+		},
+		Participants: []model.CampaignParticipant{
+			model.CampaignParticipant{
+				AccountAddress: common.HexToAddress(participans[0]),
+			},
+			model.CampaignParticipant{
+				AccountAddress: common.HexToAddress(participans[1]),
+			},
+			model.CampaignParticipant{
+				AccountAddress: common.HexToAddress(participans[2]),
+			},
 		},
 		Rewards: &model.Reward{
 			Type: model.PODIUM_REWARD,
@@ -660,7 +666,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			input: &model.UpdateCampaignInput{
 				Id:               activeCampaign.Id,
 				Stauts:           &statusFinished,
-				EligibleAccounts: &[]common.Address{activeCampaign.Accounts[0]},
+				EligibleAccounts: &[]common.Address{activeCampaign.Participants[0].AccountAddress},
 			},
 			expectedServiceErr: errors.NewInvalidArgument("invalid"),
 			repository: repositoryMock{
@@ -683,9 +689,13 @@ func Test_UpdateCampaign(t *testing.T) {
 		{
 			name: "should return the updated campaign",
 			input: &model.UpdateCampaignInput{
-				Id:               activeCampaign.Id,
-				Stauts:           &statusFinished,
-				EligibleAccounts: &activeCampaign.Accounts,
+				Id:     activeCampaign.Id,
+				Stauts: &statusFinished,
+				EligibleAccounts: &[]common.Address{
+					activeCampaign.Participants[0].AccountAddress,
+					activeCampaign.Participants[1].AccountAddress,
+					activeCampaign.Participants[2].AccountAddress,
+				},
 			},
 			expectedServiceRes: &activeCampaign,
 			repository: repositoryMock{

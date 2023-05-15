@@ -19,6 +19,7 @@ func Test_NewConverterImpl(t *testing.T) {
 
 func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 	conv := NewConverterImpl()
+	createdAt, _ := time.Parse(model.CampaignTimeFormatLayout, "2023-04-01T00:00:00Z")
 
 	startDate, _ := time.Parse(model.CampaignTimeFormatLayout, "2023-04-01T00:00:00Z")
 	endDate, _ := time.Parse(model.CampaignTimeFormatLayout, "2023-05-01T00:00:00Z")
@@ -51,10 +52,18 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 				Status:          model.STATUS_ACTIVE,
 				StartDate:       startDate,
 				EndDate:         endDate,
-				Accounts: []common.Address{
-					common.HexToAddress(participans[0]),
-					common.HexToAddress(participans[1]),
-					common.HexToAddress(participans[2]),
+				CreatedAt:       createdAt,
+				UpdatedAt:       createdAt,
+				Participants: []model.CampaignParticipant{
+					model.CampaignParticipant{
+						AccountAddress: common.HexToAddress(participans[0]),
+					},
+					model.CampaignParticipant{
+						AccountAddress: common.HexToAddress(participans[1]),
+					},
+					model.CampaignParticipant{
+						AccountAddress: common.HexToAddress(participans[2]),
+					},
 				},
 				Tags:          []string{"tag1", "tag2"},
 				EnrollMessage: "Custom enroll message",
@@ -90,10 +99,23 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 				Status:          campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_ACTIVE,
 				StartDate:       startDate.Format(model.CampaignTimeFormatLayout),
 				EndDate:         endDate.Format(model.CampaignTimeFormatLayout),
+				CreatedAt:       createdAt.Format(model.CampaignTimeFormatLayout),
+				UpdatedAt:       createdAt.Format(model.CampaignTimeFormatLayout),
 				Accounts:        participans,
-				Tags:            []string{"tag1", "tag2"},
-				EnrollMessage:   "Custom enroll message",
-				CampaignType:    campaignsservicev1.CampaignType_CAMPAIGN_TYPE_GALXE,
+				Participants: []*campaignsservicev1.Participant{
+					&campaignsservicev1.Participant{
+						AccountAddress: participans[0],
+					},
+					&campaignsservicev1.Participant{
+						AccountAddress: participans[1],
+					},
+					&campaignsservicev1.Participant{
+						AccountAddress: participans[2],
+					},
+				},
+				Tags:          []string{"tag1", "tag2"},
+				EnrollMessage: "Custom enroll message",
+				CampaignType:  campaignsservicev1.CampaignType_CAMPAIGN_TYPE_GALXE,
 				CampaignMetadata: &campaignsservicev1.Campaign_GalxeMetadata{
 					GalxeMetadata: &campaignsservicev1.GalxeCampaignMetadata{
 						CredentialId: "123456",
