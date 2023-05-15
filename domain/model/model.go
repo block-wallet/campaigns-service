@@ -48,8 +48,6 @@ type Campaign struct {
 	StartDate       time.Time
 	EndDate         time.Time
 	Rewards         *Reward
-	Accounts        []common.Address
-	Winners         []common.Address
 	Tags            []string
 	EnrollMessage   string
 	EnrollmentMode  EnrollmentMode

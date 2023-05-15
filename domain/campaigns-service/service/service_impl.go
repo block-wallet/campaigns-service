@@ -208,8 +208,8 @@ func (s *ServiceImpl) canUpdateCampaign(current *model.Campaign, updates *model.
 				return false, errors.NewInvalidArgument("winners length should match the rewards amounts length for a PODIUM like reward.")
 			}
 			participants := make(map[string]bool)
-			for _, p := range current.Accounts {
-				participants[p.String()] = true
+			for _, p := range current.Participants {
+				participants[p.AccountAddress.String()] = true
 			}
 			for _, w := range winners {
 				if !participants[w.String()] {

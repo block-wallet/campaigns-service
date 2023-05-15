@@ -30,7 +30,6 @@ func (c *ConverterImpl) ConvertFromModelCampaignToProtoCampaign(campaign *model.
 		Status:          campaign_FromModelStatusToProtoStatus(campaign.Status),
 		StartDate:       campaign.StartDate.Format(model.CampaignTimeFormatLayout),
 		EndDate:         campaign.EndDate.Format(model.CampaignTimeFormatLayout),
-		Accounts:        campaign_FromAddressesSliceToStringSlice(campaign.Accounts),
 		Tags:            campaign.Tags,
 		EnrollMessage:   campaign.EnrollMessage,
 		EnrollmentMode:  campaign_FromModelEnrollmentModeToProtoEnrollmentMode(campaign.EnrollmentMode),
@@ -362,10 +361,6 @@ func campaign_FromModelContractAddressesToProtoContractAddresses(modelContractAd
 
 func campaign_FromProtoContractAddressesToModelContractAddresses(modelContractAddresses map[string]string) map[string]common.Address {
 	return convertMapValues(modelContractAddresses, func(s string) common.Address { return common.HexToAddress(s) })
-}
-
-func campaign_FromAddressesSliceToStringSlice(addresses []common.Address) []string {
-	return convertMultipleSlice(addresses, func(a common.Address) string { return a.String() })
 }
 
 func campaign_FromStringSliceToAddressesSlice(addresses []string) []common.Address {
