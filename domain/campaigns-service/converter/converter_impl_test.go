@@ -55,13 +55,13 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 				CreatedAt:       createdAt,
 				UpdatedAt:       createdAt,
 				Participants: []model.CampaignParticipant{
-					model.CampaignParticipant{
+					{
 						AccountAddress: common.HexToAddress(participans[0]),
 					},
-					model.CampaignParticipant{
+					{
 						AccountAddress: common.HexToAddress(participans[1]),
 					},
-					model.CampaignParticipant{
+					{
 						AccountAddress: common.HexToAddress(participans[2]),
 					},
 				},
@@ -103,13 +103,13 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 				UpdatedAt:       createdAt.Format(model.CampaignTimeFormatLayout),
 				Accounts:        participans,
 				Participants: []*campaignsservicev1.Participant{
-					&campaignsservicev1.Participant{
+					{
 						AccountAddress: participans[0],
 					},
-					&campaignsservicev1.Participant{
+					{
 						AccountAddress: participans[1],
 					},
-					&campaignsservicev1.Participant{
+					{
 						AccountAddress: participans[2],
 					},
 				},
