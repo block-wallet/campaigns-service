@@ -175,17 +175,17 @@ func (r *RequestValidator) ValidateUpdateCampaignRequest(req *campaignservicev1s
 	if status != campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_INVALID {
 		switch status {
 		case campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_FINISHED:
-			if len(req.Winners) == 0 {
-				return errors.NewInvalidArgument("you must specify winners to finish a campaign")
+			if len(req.EligibleAccounts) == 0 {
+				return errors.NewInvalidArgument("you must specify the elegible accounts to finish a campaign")
 			}
 		case campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_ACTIVE, campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_CANCELLED:
-			if len(req.Winners) > 0 {
-				return errors.NewInvalidArgument("you can only set campaign winners by updating its status to FINISHED")
+			if len(req.EligibleAccounts) > 0 {
+				return errors.NewInvalidArgument("you can only set campaign elegible accounts by updating its status to FINISHED")
 			}
 		}
 	} else {
-		if len(req.Winners) > 0 {
-			return errors.NewInvalidArgument("you need to update status to FINISHED to update campaign winners")
+		if len(req.EligibleAccounts) > 0 {
+			return errors.NewInvalidArgument("you need to update status to FINISHED to update the campaign elegible accounts")
 		}
 	}
 

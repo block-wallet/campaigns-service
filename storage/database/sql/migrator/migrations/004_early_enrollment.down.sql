@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS participants DROP COLUMN early_enrollment;

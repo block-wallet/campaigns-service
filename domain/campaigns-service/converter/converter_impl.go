@@ -30,12 +30,13 @@ func (c *ConverterImpl) ConvertFromModelCampaignToProtoCampaign(campaign *model.
 		Status:          campaign_FromModelStatusToProtoStatus(campaign.Status),
 		StartDate:       campaign.StartDate.Format(model.CampaignTimeFormatLayout),
 		EndDate:         campaign.EndDate.Format(model.CampaignTimeFormatLayout),
-		Accounts:        campaign_FromAddressesSliceToStringSlice(campaign.Accounts),
-		Winners:         campaign_FromAddressesSliceToStringSlice(campaign.Winners),
 		Tags:            campaign.Tags,
 		EnrollMessage:   campaign.EnrollMessage,
 		EnrollmentMode:  campaign_FromModelEnrollmentModeToProtoEnrollmentMode(campaign.EnrollmentMode),
 		CampaignType:    campaign_FromModelCampaignTypeToProtoCampaignType(campaign.Type),
+		Participants:    campaign_FromModelParticipantsToProtoParticipants(campaign),
+		CreatedAt:       campaign.CreatedAt.Format(model.CampaignTimeFormatLayout),
+		UpdatedAt:       campaign.UpdatedAt.Format(model.CampaignTimeFormatLayout),
 	}
 
 	switch campaign.Type {
@@ -59,6 +60,14 @@ func (c *ConverterImpl) ConvertFromModelCampaignToProtoCampaign(campaign *model.
 			Amounts: campaign_FromModelAmountsToProtoAmounts(campaign.Rewards.Amounts),
 			Token:   campaign_FromModelTokenToProtoToken(campaign.Rewards.Token),
 		}
+	}
+
+	if len(campaign.Participants) > 0 {
+		accounts := make([]string, len(campaign.Participants))
+		for i, p := range campaign.Participants {
+			accounts[i] = p.AccountAddress.String()
+		}
+		ret.Accounts = accounts
 	}
 
 	return ret
@@ -91,7 +100,7 @@ func (c *ConverterImpl) ConvertFromProtoCampaignsFiltersToModelCampaignFilters(f
 		campaignFilters.ToDate = &toDate
 	}
 
-	statuses := convertMultipleSlice(filters.Statuses, campaign_FromProtoStatusToModelStatus)
+	statuses := convertMultipleSlice(filters.Status, campaign_FromProtoStatusToModelStatus)
 
 	if len(statuses) > 0 {
 		campaignFilters.Status = &statuses
@@ -169,9 +178,9 @@ func (c *ConverterImpl) ConvertFromProtoUpdateCampaignToModelUpdateCampaign(camp
 		updateInput.Stauts = &status
 	}
 
-	if len(campaignInput.Winners) > 0 {
-		winners := campaign_FromStringSliceToAddressesSlice(campaignInput.GetWinners())
-		updateInput.Winners = &winners
+	if len(campaignInput.EligibleAccounts) > 0 {
+		elegibleAccounts := campaign_FromStringSliceToAddressesSlice(campaignInput.GetEligibleAccounts())
+		updateInput.EligibleAccounts = &elegibleAccounts
 	}
 
 	return updateInput
@@ -210,6 +219,42 @@ func campaign_FromProtoTokenToModelToken(protoToken *campaignservicev1service.Mu
 	}
 }
 
+func campaign_FromModelParticipantsToProtoParticipants(campaign *model.Campaign) []*campaignservicev1service.Participant {
+	var protoParticipants = make([]*campaignservicev1service.Participant, len(campaign.Participants))
+
+	for i, p := range campaign.Participants {
+		participant := &campaignservicev1service.Participant{
+			AccountAddress:  p.AccountAddress.String(),
+			EarlyEnrollment: p.EarlyEnrollment,
+		}
+
+		if campaign.Status == model.STATUS_FINISHED {
+			participant.Eligibility = &campaignservicev1service.Eligibility{
+				IsEligible: p.Position != nil,
+			}
+
+			if participant.Eligibility.IsEligible && campaign.Rewards != nil {
+				var rewardedAmount string
+				switch campaign.Rewards.Type {
+				case model.PODIUM_REWARD:
+					{
+						podiumPos := *p.Position - 1
+						rewardedAmount = bigIntToString(campaign.Rewards.Amounts[podiumPos])
+					}
+				case model.SINGLE_REWARD:
+					{
+						rewardedAmount = bigIntToString(campaign.Rewards.Amounts[0])
+					}
+				}
+				participant.Eligibility.RewardedAmount = rewardedAmount
+			}
+		}
+		protoParticipants[i] = participant
+	}
+
+	return protoParticipants
+}
+
 func campaign_FromProtoStatusToModelStatus(protoStatus campaignservicev1service.CampaignStatus) model.CampaignStatus {
 	switch protoStatus {
 	case campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_ACTIVE:
@@ -220,6 +265,8 @@ func campaign_FromProtoStatusToModelStatus(protoStatus campaignservicev1service.
 		return model.STATUS_FINISHED
 	case campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_PENDING:
 		return model.STATUS_PENDING
+	case campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_WAITLIST:
+		return model.STATUS_WAITLIST
 	}
 	return model.STATUS_UNKNOWN
 }
@@ -233,7 +280,9 @@ func campaign_FromModelStatusToProtoStatus(modelStatus model.CampaignStatus) cam
 	case model.STATUS_FINISHED:
 		return campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_FINISHED
 	case model.STATUS_PENDING:
-		return campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_ACTIVE
+		return campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_PENDING
+	case model.STATUS_WAITLIST:
+		return campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_WAITLIST
 	}
 	return campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_INVALID
 }
@@ -312,10 +361,6 @@ func campaign_FromModelContractAddressesToProtoContractAddresses(modelContractAd
 
 func campaign_FromProtoContractAddressesToModelContractAddresses(modelContractAddresses map[string]string) map[string]common.Address {
 	return convertMapValues(modelContractAddresses, func(s string) common.Address { return common.HexToAddress(s) })
-}
-
-func campaign_FromAddressesSliceToStringSlice(addresses []common.Address) []string {
-	return convertMultipleSlice(addresses, func(a common.Address) string { return a.String() })
 }
 
 func campaign_FromStringSliceToAddressesSlice(addresses []string) []common.Address {

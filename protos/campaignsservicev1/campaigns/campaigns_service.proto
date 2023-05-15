@@ -106,7 +106,7 @@ message CreateCampaignReply {
 }
 
 message GetCampaignsFilters {
-  repeated CampaignStatus statuses = 1;
+  repeated CampaignStatus status = 1;
   google.protobuf.StringValue from_date = 2;
   google.protobuf.StringValue to_date = 3;
   repeated string tags = 4;
@@ -138,6 +138,17 @@ message PartnerOffersCampaignMetadata {
 
 }
 
+message Eligibility {
+  bool is_eligible = 1;
+  string rewarded_amount = 2;
+}
+
+message Participant {
+  string account_address = 1;
+  bool early_enrollment = 2;
+  Eligibility eligibility = 3;
+}
+
 message Campaign {
   string id = 1;
   repeated uint32 supported_chains = 2;
@@ -148,18 +159,20 @@ message Campaign {
   string end_date = 7;
   Rewards rewards = 8;
   repeated string accounts = 9;
-  repeated string winners = 10;
   repeated string tags = 11;
   string enroll_message = 12;
   EnrollmentMode enrollment_mode = 13;
   CampaignType campaign_type = 14;
+  repeated Participant participants = 15;
+  string created_at = 16;
+  string updated_at = 17;
   oneof campaign_metadata {
-    GalxeCampaignMetadata galxe_metadata = 15;
-    PartnerOffersCampaignMetadata partner_offers_metadata = 16;
+    GalxeCampaignMetadata galxe_metadata = 18;
+    PartnerOffersCampaignMetadata partner_offers_metadata = 19;
   }
 }
 
-// The rewards for the campaigns winners
+// The rewards for the campaigns eligible accounts
 message Rewards {
   MultichainToken token = 1;
   repeated string amounts = 2;
@@ -169,7 +182,7 @@ message Rewards {
 message UpdateCampaignMsg {
   string campaign_id = 1;
   CampaignStatus status = 2;
-  repeated string winners = 3;
+  repeated string eligible_accounts = 3;
 }
 
 message UpdateCampaignReply {
@@ -187,10 +200,16 @@ message MultichainToken {
 
 enum CampaignStatus {
   CAMPAIGN_STATUS_INVALID = 0;
+  //Campaign is created but it hasn't started nor users can enroll in it.
   CAMPAIGN_STATUS_PENDING = 1;
-  CAMPAIGN_STATUS_ACTIVE = 2;
-  CAMPAIGN_STATUS_FINISHED = 3;
-  CAMPAIGN_STATUS_CANCELLED = 4;
+  //Campaign is not active yet, but users can enroll in it
+  CAMPAIGN_STATUS_WAITLIST = 2;
+  //Campaign is active and users can enroll in it
+  CAMPAIGN_STATUS_ACTIVE = 3;
+  //Campaign is finished and users can claim its rewards
+  CAMPAIGN_STATUS_FINISHED = 4;
+  //Campaign is cancelled
+  CAMPAIGN_STATUS_CANCELLED = 5;
 }
 
 enum EnrollmentMode {

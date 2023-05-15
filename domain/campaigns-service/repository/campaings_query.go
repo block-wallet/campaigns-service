@@ -3,6 +3,7 @@ package campaignsrepository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/block-wallet/campaigns-service/domain/model"
+	"github.com/block-wallet/campaigns-service/utils/logger"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -33,23 +35,21 @@ func NewCampaignsQueryBuilder(filters *model.GetCampaignsFilters) *CampaignsQuer
 }
 
 func (r *CampaignsQueryBuilder) Query(ctx context.Context) (string, []any) {
-	campaignSelectFields := "c.id, c.name, c.description, c.status, c.start_date, c.end_date, c.enroll_message, c.enrollment_mode, c.campaign_type, c.external_campaign_id"
+	campaignSelectFields := "c.id, c.name, c.description, c.status, c.start_date, c.end_date, c.enroll_message, c.enrollment_mode, c.campaign_type, c.external_campaign_id, c.created_at, c.updated_at"
 	tagsSelectFields := "string_agg(distinct ct.tag, ',') as tags"
 	supportedChainFields := "string_agg(distinct csc.chain_id, ',') as supported_chains"
 	tokenSelectFields := "t.id as token_id, t.name as token_name, t.symbol as token_symbol, t.decimals as token_decimals"
 	rewardsSelectFields := "r.reward_id as reward_id, r.amounts as reward_amounts, r.type as reward_type"
-	participantsSelectStatement := "string_agg(distinct p.account_address, ',') participants"
-	winnersSelectStatement := " w.winners as winners"
-	campaignsSelect := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s, %s", campaignSelectFields, tagsSelectFields, supportedChainFields, tokenSelectFields, rewardsSelectFields, participantsSelectStatement, winnersSelectStatement)
+	participantsSelectStatement := "json_agg(distinct jsonb_build_object('account_address',p.account_address,'position',p.position,'early_enrollment', p.early_enrollment)) participants"
+	campaignsSelect := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s", campaignSelectFields, tagsSelectFields, supportedChainFields, tokenSelectFields, rewardsSelectFields, participantsSelectStatement)
 	fromAndJoinStatements := `from campaigns c 
 	LEFT JOIN rewards r on c.id = r.campaign_id  
 	LEFT JOIN tokens t on t.id = r.token_id
-	LEFT JOIN participants p on p.campaign_id = c.id 
-	LEFT JOIN campaigns_winners w on w.campaign_id = c.id
+	LEFT JOIN participants p on p.campaign_id = c.id
 	LEFT JOIN campaigns_tags ct on ct.campaign_id = c.id
 	LEFT JOIN campaigns_supported_chains csc on csc.campaign_id = c.id
 	`
-	groupStatement := "GROUP by c.id, t.id,r.reward_id,w.winners"
+	groupStatement := "GROUP by c.id, t.id,r.reward_id"
 	q := fmt.Sprintf("%s %s", campaignsSelect, fromAndJoinStatements)
 	queryWithFilters := r.withFilters(ctx, q)
 	q = fmt.Sprintf("%s %s;", queryWithFilters, groupStatement)
@@ -127,9 +127,8 @@ func (r *CampaignsQueryBuilder) withFilters(ctx context.Context, query string) s
 func (r *CampaignsQueryBuilder) Parse(ctx context.Context, rows *sql.Rows) (*model.Campaign, error) {
 	var parsedRow campaignrow
 	err := rows.Scan(&parsedRow.id, &parsedRow.name, &parsedRow.description, &parsedRow.status,
-		&parsedRow.startDate, &parsedRow.endDate, &parsedRow.enrollMessage, &parsedRow.enrollmentMode, &parsedRow.campaignType, &parsedRow.externalCampaignId, &parsedRow.tags, &parsedRow.supportedChains,
-		&parsedRow.tokenId, &parsedRow.tokenName, &parsedRow.tokenSymbol, &parsedRow.decimals, &parsedRow.rewardId, &parsedRow.amounts, &parsedRow.rewardType, &parsedRow.participants,
-		&parsedRow.winners)
+		&parsedRow.startDate, &parsedRow.endDate, &parsedRow.enrollMessage, &parsedRow.enrollmentMode, &parsedRow.campaignType, &parsedRow.externalCampaignId, &parsedRow.createdAt, &parsedRow.updatedAt, &parsedRow.tags, &parsedRow.supportedChains,
+		&parsedRow.tokenId, &parsedRow.tokenName, &parsedRow.tokenSymbol, &parsedRow.decimals, &parsedRow.rewardId, &parsedRow.amounts, &parsedRow.rewardType, &parsedRow.participants)
 	if err != nil {
 		return nil, err
 	}
@@ -162,6 +161,8 @@ func (r *CampaignsQueryBuilder) rowToCampaign(row campaignrow) (*model.Campaign,
 		EndDate:        endDate,
 		EnrollMessage:  *row.enrollMessage,
 		EnrollmentMode: model.EnrollmentMode(row.enrollmentMode),
+		CreatedAt:      row.createdAt,
+		UpdatedAt:      row.updatedAt,
 	}
 
 	var campaignMetadata model.CampaignMetadata
@@ -222,20 +223,23 @@ func (r *CampaignsQueryBuilder) rowToCampaign(row campaignrow) (*model.Campaign,
 	}
 
 	if row.participants != nil {
-		strParticipants := strings.Split(*row.participants, SPLIT_TOKEN)
-		accounts := make([]common.Address, 0, len(strParticipants))
-		for _, p := range strParticipants {
-			accounts = append(accounts, common.HexToAddress(p))
+		var data = make([]*participantJSONRow, 0)
+		participants := make([]*model.CampaignParticipant, 0)
+		if err = json.Unmarshal(*row.participants, &data); err != nil {
+			logger.Sugar.Warnf("unable to parse participants data for campaign: %v. Error: %v", row.id, err.Error())
+		} else {
+			for _, d := range data {
+				if d.AccountAddress != "" {
+					participants = append(participants, &model.CampaignParticipant{
+						AccountAddress:  common.HexToAddress(d.AccountAddress),
+						EarlyEnrollment: d.EarlyEnrollment,
+						Position:        d.Position,
+					})
+				}
+			}
 		}
-		campaign.Accounts = accounts
-	}
-	if row.winners != nil {
-		strWinners := strings.Split(*row.winners, SPLIT_TOKEN)
-		winners := make([]common.Address, 0, len(strWinners))
-		for _, w := range strWinners {
-			winners = append(winners, common.HexToAddress(w))
-		}
-		campaign.Winners = winners
+
+		campaign.Participants = participants
 	}
 	return &campaign, nil
 }

@@ -19,6 +19,7 @@ func Test_NewConverterImpl(t *testing.T) {
 
 func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 	conv := NewConverterImpl()
+	createdAt, _ := time.Parse(model.CampaignTimeFormatLayout, "2023-04-01T00:00:00Z")
 
 	startDate, _ := time.Parse(model.CampaignTimeFormatLayout, "2023-04-01T00:00:00Z")
 	endDate, _ := time.Parse(model.CampaignTimeFormatLayout, "2023-05-01T00:00:00Z")
@@ -51,10 +52,18 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 				Status:          model.STATUS_ACTIVE,
 				StartDate:       startDate,
 				EndDate:         endDate,
-				Accounts: []common.Address{
-					common.HexToAddress(participans[0]),
-					common.HexToAddress(participans[1]),
-					common.HexToAddress(participans[2]),
+				CreatedAt:       createdAt,
+				UpdatedAt:       createdAt,
+				Participants: []*model.CampaignParticipant{
+					{
+						AccountAddress: common.HexToAddress(participans[0]),
+					},
+					{
+						AccountAddress: common.HexToAddress(participans[1]),
+					},
+					{
+						AccountAddress: common.HexToAddress(participans[2]),
+					},
 				},
 				Tags:          []string{"tag1", "tag2"},
 				EnrollMessage: "Custom enroll message",
@@ -90,11 +99,23 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 				Status:          campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_ACTIVE,
 				StartDate:       startDate.Format(model.CampaignTimeFormatLayout),
 				EndDate:         endDate.Format(model.CampaignTimeFormatLayout),
+				CreatedAt:       createdAt.Format(model.CampaignTimeFormatLayout),
+				UpdatedAt:       createdAt.Format(model.CampaignTimeFormatLayout),
 				Accounts:        participans,
-				Tags:            []string{"tag1", "tag2"},
-				EnrollMessage:   "Custom enroll message",
-				Winners:         []string{},
-				CampaignType:    campaignsservicev1.CampaignType_CAMPAIGN_TYPE_GALXE,
+				Participants: []*campaignsservicev1.Participant{
+					{
+						AccountAddress: participans[0],
+					},
+					{
+						AccountAddress: participans[1],
+					},
+					{
+						AccountAddress: participans[2],
+					},
+				},
+				Tags:          []string{"tag1", "tag2"},
+				EnrollMessage: "Custom enroll message",
+				CampaignType:  campaignsservicev1.CampaignType_CAMPAIGN_TYPE_GALXE,
 				CampaignMetadata: &campaignsservicev1.Campaign_GalxeMetadata{
 					GalxeMetadata: &campaignsservicev1.GalxeCampaignMetadata{
 						CredentialId: "123456",
@@ -160,7 +181,7 @@ func Test_ConvertFromProtoCampaignFiltersToModelCampaignFilters(t *testing.T) {
 		{
 			name: "Should convert all the filters",
 			input: &campaignsservicev1.GetCampaignsFilters{
-				Statuses: []campaignsservicev1.CampaignStatus{
+				Status: []campaignsservicev1.CampaignStatus{
 					campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_ACTIVE,
 					campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_CANCELLED,
 					campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_FINISHED,
@@ -453,7 +474,7 @@ func Test_ConvertFromProtoUpdateCampaignToModelUpdateCampaign(t *testing.T) {
 	conv := NewConverterImpl()
 	statusCancelled := model.STATUS_CANCELLED
 	statusFinished := model.STATUS_FINISHED
-	winners := []string{
+	elegibleAccounts := []string{
 		"0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22",
 		"0x6B25a67345111737d5FBEA0dd1443F64F0ef17CB",
 		"0xFBCFfCE77aad086216C8016A73faeec1fE8fFEcc",
@@ -475,19 +496,19 @@ func Test_ConvertFromProtoUpdateCampaignToModelUpdateCampaign(t *testing.T) {
 			},
 		},
 		{
-			name: "should map status and winners",
+			name: "should map status and elegible accounts",
 			input: &campaignsservicev1.UpdateCampaignMsg{
-				CampaignId: "campaign-1",
-				Status:     campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_FINISHED,
-				Winners:    winners,
+				CampaignId:       "campaign-1",
+				Status:           campaignsservicev1.CampaignStatus_CAMPAIGN_STATUS_FINISHED,
+				EligibleAccounts: elegibleAccounts,
 			},
 			expected: &model.UpdateCampaignInput{
 				Id:     "campaign-1",
 				Stauts: &statusFinished,
-				Winners: &[]common.Address{
-					common.HexToAddress(winners[0]),
-					common.HexToAddress(winners[1]),
-					common.HexToAddress(winners[2]),
+				EligibleAccounts: &[]common.Address{
+					common.HexToAddress(elegibleAccounts[0]),
+					common.HexToAddress(elegibleAccounts[1]),
+					common.HexToAddress(elegibleAccounts[2]),
 				},
 			},
 		},

@@ -127,7 +127,7 @@ func (r *SQLRepository) EnrollInCampaign(ctx context.Context, input *model.Enrol
 		return false, err
 	}
 
-	_, err = tx.ExecContext(ctx, "INSERT INTO participants (campaign_id,account_address) VALUES ($1,$2)", input.CampaignId, input.Adddress.String())
+	_, err = tx.ExecContext(ctx, "INSERT INTO participants (campaign_id,account_address,early_enrollment) VALUES ($1,$2,$3)", input.CampaignId, input.Adddress.String(), input.EarlyEnrollment)
 	if err != nil {
 		if _err := tx.Rollback(); _err != nil {
 			logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())
@@ -173,6 +173,9 @@ func (r *SQLRepository) UpdateCampaign(ctx context.Context, updates *model.Updat
 	}
 	params := make([]any, 0)
 	updatesVariables := make([]string, 0)
+
+	updatesVariables = append(updatesVariables, "updated_at = current_timestamp")
+
 	if updates.Stauts != nil {
 		params = append(params, string(*updates.Stauts))
 		updatesVariables = append(updatesVariables, "status = $1")
@@ -192,7 +195,7 @@ func (r *SQLRepository) UpdateCampaign(ctx context.Context, updates *model.Updat
 		}
 	}
 
-	if updates.Winners != nil && len(*updates.Winners) > 0 {
+	if updates.EligibleAccounts != nil && len(*updates.EligibleAccounts) > 0 {
 		_, err := tx.ExecContext(ctx, "UPDATE participants SET position = NULL where campaign_id = $1;", updates.Id)
 		if err != nil {
 			if _err := tx.Rollback(); _err != nil {
@@ -201,10 +204,10 @@ func (r *SQLRepository) UpdateCampaign(ctx context.Context, updates *model.Updat
 			}
 			return nil, err
 		}
-		winners := *updates.Winners
-		for i := 0; i < len(winners); i++ {
-			winnerAddress := winners[i].String()
-			_, err := tx.ExecContext(ctx, "UPDATE participants SET position = $1 WHERE campaign_id = $2 and account_address = $3;", i+1, updates.Id, winnerAddress)
+		elegibleAccounts := *updates.EligibleAccounts
+		for i := 0; i < len(elegibleAccounts); i++ {
+			elegibleAddress := elegibleAccounts[i].String()
+			_, err := tx.ExecContext(ctx, "UPDATE participants SET position = $1 WHERE campaign_id = $2 and account_address = $3;", i+1, updates.Id, elegibleAddress)
 			if err != nil {
 				if _err := tx.Rollback(); _err != nil {
 					logger.Sugar.WithCtx(ctx).Warnf("error applying transaction rollback: %v", _err.Error())
