@@ -43,7 +43,7 @@ func getActiveCampaign() model.Campaign {
 		Metadata: model.CampaignMetadata{
 			PartnerOffersMetadata: &model.PartnerOffersMetadata{},
 		},
-		Participants: []model.CampaignParticipant{
+		Participants: []*model.CampaignParticipant{
 			{
 				AccountAddress: common.HexToAddress(participans[0]),
 			},

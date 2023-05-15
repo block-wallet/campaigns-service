@@ -53,7 +53,7 @@ type Campaign struct {
 	EnrollmentMode  EnrollmentMode
 	Type            CampaignType
 	Metadata        CampaignMetadata
-	Participants    []CampaignParticipant
+	Participants    []*CampaignParticipant
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }

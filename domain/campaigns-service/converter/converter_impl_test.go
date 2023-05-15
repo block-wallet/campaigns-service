@@ -54,7 +54,7 @@ func Test_ConvertFromModelCampaignToProtoCampaign(t *testing.T) {
 				EndDate:         endDate,
 				CreatedAt:       createdAt,
 				UpdatedAt:       createdAt,
-				Participants: []model.CampaignParticipant{
+				Participants: []*model.CampaignParticipant{
 					{
 						AccountAddress: common.HexToAddress(participans[0]),
 					},

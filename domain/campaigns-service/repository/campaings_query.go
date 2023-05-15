@@ -224,13 +224,13 @@ func (r *CampaignsQueryBuilder) rowToCampaign(row campaignrow) (*model.Campaign,
 
 	if row.participants != nil {
 		var data = make([]*participantJSONRow, 0)
-		participants := make([]model.CampaignParticipant, 0)
+		participants := make([]*model.CampaignParticipant, 0)
 		if err = json.Unmarshal(*row.participants, &data); err != nil {
 			logger.Sugar.Warnf("unable to parse participants data for campaign: %v. Error: %v", row.id, err.Error())
 		} else {
 			for _, d := range data {
 				if d.AccountAddress != "" {
-					participants = append(participants, model.CampaignParticipant{
+					participants = append(participants, &model.CampaignParticipant{
 						AccountAddress:  common.HexToAddress(d.AccountAddress),
 						EarlyEnrollment: d.EarlyEnrollment,
 						Position:        d.Position,
