@@ -34,4 +34,4 @@ queries.sql
 buf.gen.yaml
 buf.lock
 
-postgres-db
+_postgres-db

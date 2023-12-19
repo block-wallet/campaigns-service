@@ -427,7 +427,7 @@ If some of these transitions cannot fulfill what you want to do with the campaig
 
 ```
 {
-    "stauts": "CAMPAIGN_STATUS_FINISHED",
+    "status": "CAMPAIGN_STATUS_FINISHED",
     "elegibleAccounts":["0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C22","0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C21","0xf0F8B7C21e280b0167F14Af6db4B9F90430A6C32"]
 }
 ```

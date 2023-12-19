@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 networks:
   campaigns-network:
@@ -16,30 +16,43 @@ services:
       postgres-database:
         condition: service_healthy
     ports:
-      - '8080:8080'
-      - '9008:9008'
+      - "8080:8080"
+      - "9008:9008"
     links:
       - postgres-database
     networks:
       - campaigns-network
   postgres-database:
     container_name: postgres-campaigns-service
-    image: postgres:latest
+    image: postgres:15
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
       PGDATA: /data/postgres
     volumes:
-      - ./postgres-db:/data/postgres
+      - ./_postgres-db:/data/postgres
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
     ports:
-      - '5432:5432'
+      - "5432:5432"
     networks:
       - campaigns-network
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - "8888:80"
+    networks:
+      - campaigns-network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@blockwallet.io
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - postgres-database
 
 volumes:
   postgres-db:

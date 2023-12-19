@@ -150,11 +150,11 @@ db/up:
 	@echo "----------------------------------------------------------------"
 	@echo " Running local postgres database..."
 	@echo "----------------------------------------------------------------"
-	docker-compose -f docker-compose.yml up -d postgres-database
+	docker-compose -f docker-compose.yml up -d postgres-database pgadmin
 
 .PHONY: db/down
 db/down:
 	@echo "----------------------------------------------------------------"
 	@echo " Stopping local postgres database..."
 	@echo "----------------------------------------------------------------"
-	docker stop postgres-campaigns-service
+	docker stop postgres-campaigns-service pgadmin

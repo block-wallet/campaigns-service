@@ -20,7 +20,7 @@ require (
 	golang.org/x/net v0.8.0
 	google.golang.org/genproto v0.0.0-20230330200707-38013875ee22
 	google.golang.org/grpc v1.54.0
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/protobuf v1.31.0
 )
 
 require (
@@ -67,5 +67,6 @@ require (
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
