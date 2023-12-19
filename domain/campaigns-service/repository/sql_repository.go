@@ -176,8 +176,8 @@ func (r *SQLRepository) UpdateCampaign(ctx context.Context, updates *model.Updat
 
 	updatesVariables = append(updatesVariables, "updated_at = current_timestamp")
 
-	if updates.Stauts != nil {
-		params = append(params, string(*updates.Stauts))
+	if updates.Status != nil {
+		params = append(params, string(*updates.Status))
 		updatesVariables = append(updatesVariables, "status = $1")
 	}
 

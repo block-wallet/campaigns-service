@@ -42,8 +42,8 @@ func (r *CampaignsQueryBuilder) Query(ctx context.Context) (string, []any) {
 	rewardsSelectFields := "r.reward_id as reward_id, r.amounts as reward_amounts, r.type as reward_type"
 	participantsSelectStatement := "json_agg(distinct jsonb_build_object('account_address',p.account_address,'position',p.position,'early_enrollment', p.early_enrollment)) participants"
 	campaignsSelect := fmt.Sprintf("SELECT %s, %s, %s, %s, %s, %s", campaignSelectFields, tagsSelectFields, supportedChainFields, tokenSelectFields, rewardsSelectFields, participantsSelectStatement)
-	fromAndJoinStatements := `from campaigns c 
-	LEFT JOIN rewards r on c.id = r.campaign_id  
+	fromAndJoinStatements := `from campaigns c
+	LEFT JOIN rewards r on c.id = r.campaign_id
 	LEFT JOIN tokens t on t.id = r.token_id
 	LEFT JOIN participants p on p.campaign_id = c.id
 	LEFT JOIN campaigns_tags ct on ct.campaign_id = c.id
@@ -175,6 +175,11 @@ func (r *CampaignsQueryBuilder) rowToCampaign(row campaignrow) (*model.Campaign,
 			}
 		}
 	case model.CAMPAIGN_TYPE_PARTNER_OFFERS:
+		{
+			campaignMetadata.PartnerOffersMetadata = &model.PartnerOffersMetadata{}
+		}
+	//Wont use Metadata for now
+	case model.CAMPAIGN_TYPE_STAKING:
 		{
 			campaignMetadata.PartnerOffersMetadata = &model.PartnerOffersMetadata{}
 		}

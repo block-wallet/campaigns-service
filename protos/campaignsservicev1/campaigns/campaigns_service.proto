@@ -218,10 +218,11 @@ enum EnrollmentMode {
   INSTANCE_SINGLE_ENROLL = 2;
 }
 
-enum CampaignType { 
+enum CampaignType {
   CAMPAIGN_TYPE_INVALID = 0;
   CAMPAIGN_TYPE_PARTNER_OFFERS = 1;
   CAMPAIGN_TYPE_GALXE = 2;
+  CAMPAIGN_TYPE_STAKING = 3;
 }
 
 enum RewardType {

@@ -175,7 +175,7 @@ func (c *ConverterImpl) ConvertFromProtoUpdateCampaignToModelUpdateCampaign(camp
 
 	if campaignInput.Status != campaignservicev1service.CampaignStatus_CAMPAIGN_STATUS_INVALID {
 		status := campaign_FromProtoStatusToModelStatus(campaignInput.Status)
-		updateInput.Stauts = &status
+		updateInput.Status = &status
 	}
 
 	if len(campaignInput.EligibleAccounts) > 0 {
@@ -313,6 +313,8 @@ func campaign_FromModelCampaignTypeToProtoCampaignType(modelCampaignType model.C
 		return campaignservicev1service.CampaignType_CAMPAIGN_TYPE_PARTNER_OFFERS
 	case model.CAMPAIGN_TYPE_GALXE:
 		return campaignservicev1service.CampaignType_CAMPAIGN_TYPE_GALXE
+	case model.CAMPAIGN_TYPE_STAKING:
+		return campaignservicev1service.CampaignType_CAMPAIGN_TYPE_STAKING
 	}
 	return campaignservicev1service.CampaignType_CAMPAIGN_TYPE_PARTNER_OFFERS
 }
@@ -323,6 +325,8 @@ func campaign_FromProtoCampaignTypeToModelCampaignType(protoCampaignType campaig
 		return model.CAMPAIGN_TYPE_PARTNER_OFFERS
 	case campaignservicev1service.CampaignType_CAMPAIGN_TYPE_GALXE:
 		return model.CAMPAIGN_TYPE_GALXE
+	case campaignservicev1service.CampaignType_CAMPAIGN_TYPE_STAKING:
+		return model.CAMPAIGN_TYPE_STAKING
 	}
 	return model.CAMPAIGN_TYPE_PARTNER_OFFERS
 }

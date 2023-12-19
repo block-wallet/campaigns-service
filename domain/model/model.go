@@ -37,6 +37,7 @@ const (
 const (
 	CAMPAIGN_TYPE_PARTNER_OFFERS CampaignType = "PARTNER_OFFERS"
 	CAMPAIGN_TYPE_GALXE          CampaignType = "GALXE"
+	CAMPAIGN_TYPE_STAKING        CampaignType = "STAKING"
 )
 
 type Campaign struct {
@@ -138,6 +139,6 @@ type UnenrollFromCampaignInput struct {
 
 type UpdateCampaignInput struct {
 	Id               string
-	Stauts           *CampaignStatus
+	Status           *CampaignStatus
 	EligibleAccounts *[]common.Address
 }

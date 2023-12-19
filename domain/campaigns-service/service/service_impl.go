@@ -178,8 +178,8 @@ func (s *ServiceImpl) canUpdateCampaign(current *model.Campaign, updates *model.
 	switch current.Status {
 	case model.STATUS_PENDING, model.STATUS_WAITLIST:
 		{
-			if updates.Stauts != nil {
-				if *updates.Stauts == model.STATUS_ACTIVE {
+			if updates.Status != nil {
+				if *updates.Status == model.STATUS_ACTIVE {
 					if current.StartDate.After(time.Now()) {
 						return false, errors.NewFailedPrecondition(fmt.Sprintf("cannot activate a campaign that hasn't started yet. Campaign starts on: %v", current.StartDate))
 					}
@@ -187,7 +187,7 @@ func (s *ServiceImpl) canUpdateCampaign(current *model.Campaign, updates *model.
 						return false, errors.NewFailedPrecondition(fmt.Sprintf("cannot activate a campaign that has already finished. Campaign ended on: %v", current.EndDate))
 					}
 				}
-				if *updates.Stauts == model.STATUS_FINISHED {
+				if *updates.Status == model.STATUS_FINISHED {
 					return false, errors.NewFailedPrecondition("cannot finalize a campaign that hasn't been active. You need to activate it first.")
 				}
 			}
@@ -195,13 +195,13 @@ func (s *ServiceImpl) canUpdateCampaign(current *model.Campaign, updates *model.
 		}
 	case model.STATUS_ACTIVE:
 		{
-			if updates.Stauts != nil && (*updates.Stauts == model.STATUS_PENDING || *updates.Stauts == model.STATUS_WAITLIST) {
+			if updates.Status != nil && (*updates.Status == model.STATUS_PENDING || *updates.Status == model.STATUS_WAITLIST) {
 				return false, errors.NewFailedPrecondition("you can't set this campaign to PENDING or WAITLIST. You can only either CANCEL or FINISH it.")
 			}
 		}
 	}
 
-	if updates.Stauts != nil && *updates.Stauts == model.STATUS_FINISHED {
+	if updates.Status != nil && *updates.Status == model.STATUS_FINISHED {
 		if updates.EligibleAccounts != nil {
 			elegibleAccounts := *updates.EligibleAccounts
 			if len(elegibleAccounts) != len(current.Rewards.Amounts) && current.Rewards.Type == model.PODIUM_REWARD {

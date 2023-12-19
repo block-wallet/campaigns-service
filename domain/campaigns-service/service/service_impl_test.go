@@ -588,7 +588,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			expectedServiceErr: errors.NewInternal("internal"),
 			input: &model.UpdateCampaignInput{
 				Id:     cancelledCampaign.Id,
-				Stauts: &statusActive,
+				Status: &statusActive,
 			},
 			repository: repositoryMock{
 				getCampaignByIdErr: fmt.Errorf("err"),
@@ -598,7 +598,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			name: "should return not found error if campaign does not exists",
 			input: &model.UpdateCampaignInput{
 				Id:     cancelledCampaign.Id,
-				Stauts: &statusActive,
+				Status: &statusActive,
 			},
 			expectedServiceErr: errors.NewNotFound("campaign not found"),
 			repository: repositoryMock{
@@ -610,7 +610,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			name: "cannot update a cancelled campaign",
 			input: &model.UpdateCampaignInput{
 				Id:     cancelledCampaign.Id,
-				Stauts: &statusActive,
+				Status: &statusActive,
 			},
 			expectedServiceErr: errors.NewFailedPrecondition("cannot update cancelled campaign"),
 			repository: repositoryMock{
@@ -621,7 +621,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			name: "cannot set status finished to a non-active campaign",
 			input: &model.UpdateCampaignInput{
 				Id:     pendingCampaign.Id,
-				Stauts: &statusFinished,
+				Status: &statusFinished,
 			},
 			expectedServiceErr: errors.NewFailedPrecondition("invalid"),
 			repository: repositoryMock{
@@ -632,7 +632,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			name: "cannot activate a campaign which start_date is in the future",
 			input: &model.UpdateCampaignInput{
 				Id:     pendingCampaignFutureStartDate.Id,
-				Stauts: &statusActive,
+				Status: &statusActive,
 			},
 			expectedServiceErr: errors.NewFailedPrecondition("invalid"),
 			repository: repositoryMock{
@@ -643,7 +643,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			name: "cannot activate a campaign which end_date is in the past",
 			input: &model.UpdateCampaignInput{
 				Id:     pendingCampaignPastEndDate.Id,
-				Stauts: &statusActive,
+				Status: &statusActive,
 			},
 			expectedServiceErr: errors.NewFailedPrecondition("invalid"),
 			repository: repositoryMock{
@@ -654,7 +654,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			name: "cannot set to pending an active campaign",
 			input: &model.UpdateCampaignInput{
 				Id:     activeCampaign.Id,
-				Stauts: &statusPending,
+				Status: &statusPending,
 			},
 			expectedServiceErr: errors.NewFailedPrecondition("invalid"),
 			repository: repositoryMock{
@@ -665,7 +665,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			name: "should return error if the number of elegible accounts does not match the amount of rewards in a podium like campaign",
 			input: &model.UpdateCampaignInput{
 				Id:               activeCampaign.Id,
-				Stauts:           &statusFinished,
+				Status:           &statusFinished,
 				EligibleAccounts: &[]common.Address{activeCampaign.Participants[0].AccountAddress},
 			},
 			expectedServiceErr: errors.NewInvalidArgument("invalid"),
@@ -677,7 +677,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			name: "should return error if one of the elegible accounts is not registered in the campaign",
 			input: &model.UpdateCampaignInput{
 				Id:               activeCampaign.Id,
-				Stauts:           &statusFinished,
+				Status:           &statusFinished,
 				EligibleAccounts: &[]common.Address{common.HexToAddress("0xB1e8eB3bd367095F1eD945ba8bf67cc698D958c9")},
 			},
 			expectedServiceErr: errors.NewInvalidArgument("invalid"),
@@ -690,7 +690,7 @@ func Test_UpdateCampaign(t *testing.T) {
 			name: "should return the updated campaign",
 			input: &model.UpdateCampaignInput{
 				Id:     activeCampaign.Id,
-				Stauts: &statusFinished,
+				Status: &statusFinished,
 				EligibleAccounts: &[]common.Address{
 					activeCampaign.Participants[0].AccountAddress,
 					activeCampaign.Participants[1].AccountAddress,

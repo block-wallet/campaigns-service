@@ -492,7 +492,7 @@ func Test_ConvertFromProtoUpdateCampaignToModelUpdateCampaign(t *testing.T) {
 			},
 			expected: &model.UpdateCampaignInput{
 				Id:     "campaign-1",
-				Stauts: &statusCancelled,
+				Status: &statusCancelled,
 			},
 		},
 		{
@@ -504,7 +504,7 @@ func Test_ConvertFromProtoUpdateCampaignToModelUpdateCampaign(t *testing.T) {
 			},
 			expected: &model.UpdateCampaignInput{
 				Id:     "campaign-1",
-				Stauts: &statusFinished,
+				Status: &statusFinished,
 				EligibleAccounts: &[]common.Address{
 					common.HexToAddress(elegibleAccounts[0]),
 					common.HexToAddress(elegibleAccounts[1]),
